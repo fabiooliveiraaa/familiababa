@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Calendar, Clock, MapPin, DollarSign, Users, Lock, Unlock, Loader2 } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock, MapPin, DollarSign, Users, Lock, Unlock, Loader2, Upload, Copy, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -9,7 +9,9 @@ import { useBabas, useBabaRegistrations } from '@/hooks/useBabas';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
 import {
   Select,
   SelectContent,
@@ -25,6 +27,10 @@ export default function BabaDetails() {
   const { registrations, loading: regsLoading, register, updateStatus } = useBabaRegistrations(id || '');
   const { user, isAdmin } = useAuthContext();
   const [selectedPosition, setSelectedPosition] = useState<'linha' | 'goleiro'>('linha');
+  const [uploading, setUploading] = useState(false);
+  const [paymentProofFile, setPaymentProofFile] = useState<File | null>(null);
+  const [copied, setCopied] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const baba = babas.find((b) => b.id === id);
 
@@ -53,7 +59,6 @@ export default function BabaDetails() {
 
   const linhaCount = registrations.filter((r) => r.position === 'linha').length;
   const goleiroCount = registrations.filter((r) => r.position === 'goleiro').length;
-  const paidCount = registrations.filter((r) => r.status === 'pago' || r.status === 'confirmado').length;
   const confirmedCount = registrations.filter((r) => r.status === 'confirmado').length;
 
   const isUserRegistered = user && registrations.some((r) => r.user_id === user.id);
@@ -63,7 +68,29 @@ export default function BabaDetails() {
     if (isUserRegistered) return false;
     if (selectedPosition === 'linha' && linhaCount >= baba.max_linha_players) return false;
     if (selectedPosition === 'goleiro' && goleiroCount >= baba.max_goleiros) return false;
+    // Linha players need payment proof
+    if (selectedPosition === 'linha' && !paymentProofFile) return false;
     return true;
+  };
+
+  const handleCopyPix = async () => {
+    if (baba.pix_key) {
+      await navigator.clipboard.writeText(baba.pix_key);
+      setCopied(true);
+      toast({ title: 'Chave PIX copiada!' });
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        toast({ title: 'Arquivo muito grande', description: 'Máximo 5MB', variant: 'destructive' });
+        return;
+      }
+      setPaymentProofFile(file);
+    }
   };
 
   const handleRegister = async () => {
@@ -71,7 +98,32 @@ export default function BabaDetails() {
       navigate('/auth');
       return;
     }
-    await register(user.id, selectedPosition);
+
+    setUploading(true);
+    let paymentProofUrl: string | undefined;
+
+    // Upload payment proof for linha players
+    if (selectedPosition === 'linha' && paymentProofFile) {
+      const fileExt = paymentProofFile.name.split('.').pop();
+      const fileName = `${user.id}/${id}_${Date.now()}.${fileExt}`;
+
+      const { data, error } = await supabase.storage
+        .from('payment-proofs')
+        .upload(fileName, paymentProofFile);
+
+      if (error) {
+        toast({ title: 'Erro ao enviar comprovante', description: error.message, variant: 'destructive' });
+        setUploading(false);
+        return;
+      }
+
+      const { data: urlData } = supabase.storage.from('payment-proofs').getPublicUrl(data.path);
+      paymentProofUrl = urlData.publicUrl;
+    }
+
+    await register(user.id, selectedPosition, paymentProofUrl);
+    setPaymentProofFile(null);
+    setUploading(false);
   };
 
   const handleStatusChange = (userId: string, newStatus: 'inscrito' | 'pago' | 'confirmado') => {
@@ -119,6 +171,25 @@ export default function BabaDetails() {
                 <span className="font-bold text-lg">R$ {Number(baba.price).toFixed(2)}</span>
               </div>
 
+              {/* PIX Key Section */}
+              {baba.pix_key && (
+                <div className="border-t pt-4">
+                  <h4 className="font-semibold mb-2 flex items-center gap-2">
+                    <DollarSign className="h-4 w-4" />
+                    Pagamento via PIX
+                  </h4>
+                  <div className="bg-muted p-3 rounded-lg">
+                    <p className="text-sm text-muted-foreground mb-2">Chave PIX:</p>
+                    <div className="flex items-center gap-2">
+                      <code className="flex-1 text-sm bg-background p-2 rounded truncate">{baba.pix_key}</code>
+                      <Button size="sm" variant="outline" onClick={handleCopyPix}>
+                        {copied ? <CheckCircle className="h-4 w-4 text-success" /> : <Copy className="h-4 w-4" />}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div className="border-t pt-4 space-y-3">
                 <h4 className="font-semibold flex items-center gap-2">
                   <Users className="h-4 w-4" />
@@ -137,16 +208,10 @@ export default function BabaDetails() {
               </div>
 
               <div className="border-t pt-4 space-y-3">
-                <h4 className="font-semibold">Status Geral</h4>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-warning/20 p-3 rounded-lg text-center">
-                    <p className="text-2xl font-bold text-warning-foreground">{paidCount}</p>
-                    <p className="text-xs text-muted-foreground">Pagos</p>
-                  </div>
-                  <div className="bg-success/20 p-3 rounded-lg text-center">
-                    <p className="text-2xl font-bold text-success">{confirmedCount}</p>
-                    <p className="text-xs text-muted-foreground">Confirmados</p>
-                  </div>
+                <h4 className="font-semibold">Confirmados</h4>
+                <div className="bg-success/20 p-3 rounded-lg text-center">
+                  <p className="text-2xl font-bold text-success">{confirmedCount}</p>
+                  <p className="text-xs text-muted-foreground">Participantes confirmados</p>
                 </div>
               </div>
 
@@ -167,12 +232,58 @@ export default function BabaDetails() {
                             Jogador de Linha {linhaCount >= baba.max_linha_players && '(Cheio)'}
                           </SelectItem>
                           <SelectItem value="goleiro" disabled={goleiroCount >= baba.max_goleiros}>
-                            Goleiro {goleiroCount >= baba.max_goleiros && '(Cheio)'}
+                            Goleiro (não paga) {goleiroCount >= baba.max_goleiros && '(Cheio)'}
                           </SelectItem>
                         </SelectContent>
                       </Select>
-                      <Button className="w-full btn-glow" onClick={handleRegister} disabled={!canRegister()}>
-                        Inscrever-se
+
+                      {/* Payment proof upload for linha players */}
+                      {selectedPosition === 'linha' && (
+                        <div className="space-y-2">
+                          <p className="text-sm text-muted-foreground">
+                            Anexe o comprovante de pagamento PIX:
+                          </p>
+                          <input
+                            type="file"
+                            ref={fileInputRef}
+                            onChange={handleFileChange}
+                            accept="image/*,.pdf"
+                            className="hidden"
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="w-full"
+                            onClick={() => fileInputRef.current?.click()}
+                          >
+                            <Upload className="h-4 w-4 mr-2" />
+                            {paymentProofFile ? paymentProofFile.name : 'Selecionar comprovante'}
+                          </Button>
+                          {paymentProofFile && (
+                            <p className="text-xs text-success">✓ Comprovante selecionado</p>
+                          )}
+                        </div>
+                      )}
+
+                      {selectedPosition === 'goleiro' && (
+                        <p className="text-sm text-muted-foreground bg-muted p-2 rounded">
+                          Goleiros não precisam pagar e são confirmados automaticamente.
+                        </p>
+                      )}
+
+                      <Button 
+                        className="w-full btn-glow" 
+                        onClick={handleRegister} 
+                        disabled={!canRegister() || uploading}
+                      >
+                        {uploading ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Enviando...
+                          </>
+                        ) : (
+                          'Inscrever-se'
+                        )}
                       </Button>
                     </>
                   ) : (
@@ -217,7 +328,7 @@ export default function BabaDetails() {
           {/* Players List */}
           <Card className="lg:col-span-2 border-2">
             <CardHeader>
-              <CardTitle>Lista de Inscritos</CardTitle>
+              <CardTitle>Lista de Jogadores</CardTitle>
             </CardHeader>
             <CardContent>
               <PlayerList 

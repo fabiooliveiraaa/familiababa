@@ -15,6 +15,7 @@ export interface Baba {
   is_open: boolean;
   created_by: string;
   created_at: string;
+  pix_key: string | null;
 }
 
 export interface Registration {
@@ -24,6 +25,7 @@ export interface Registration {
   position: 'linha' | 'goleiro';
   status: 'inscrito' | 'pago' | 'confirmado';
   registered_at: string;
+  payment_proof_url: string | null;
   profiles?: {
     id: string;
     first_name: string;
@@ -162,13 +164,18 @@ export function useBabaRegistrations(babaId: string) {
     }
   }, [babaId]);
 
-  const register = async (userId: string, position: 'linha' | 'goleiro') => {
+  const register = async (userId: string, position: 'linha' | 'goleiro', paymentProofUrl?: string) => {
+    // Goleiros go directly to confirmed status
+    const status = position === 'goleiro' ? 'confirmado' : 'inscrito';
+    
     const { error } = await supabase
       .from('registrations')
       .insert({
         baba_id: babaId,
         user_id: userId,
         position,
+        status,
+        payment_proof_url: paymentProofUrl || null,
       });
     
     if (error) {

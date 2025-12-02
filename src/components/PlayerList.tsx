@@ -1,4 +1,4 @@
-import { Check, Clock, DollarSign, User as UserIcon } from 'lucide-react';
+import { Check, Clock, DollarSign, User as UserIcon, FileText, ExternalLink } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -11,13 +11,15 @@ interface PlayerListProps {
 }
 
 const statusConfig = {
-  inscrito: { label: 'Inscrito', icon: Clock, className: 'bg-muted text-muted-foreground' },
+  inscrito: { label: 'Aguardando', icon: Clock, className: 'bg-muted text-muted-foreground' },
   pago: { label: 'Pago', icon: DollarSign, className: 'bg-warning text-warning-foreground' },
   confirmado: { label: 'Confirmado', icon: Check, className: 'bg-success text-success-foreground' },
 };
 
 export function PlayerList({ registrations, isAdmin, onStatusChange }: PlayerListProps) {
-  const linhaPlayers = registrations.filter((r) => r.position === 'linha');
+  // Separate confirmed and pending players
+  const linhaConfirmed = registrations.filter((r) => r.position === 'linha' && r.status === 'confirmado');
+  const linhaPending = registrations.filter((r) => r.position === 'linha' && r.status !== 'confirmado');
   const goleiros = registrations.filter((r) => r.position === 'goleiro');
 
   const handleStatusChange = (userId: string, currentStatus: 'inscrito' | 'pago' | 'confirmado') => {
@@ -29,7 +31,7 @@ export function PlayerList({ registrations, isAdmin, onStatusChange }: PlayerLis
     onStatusChange?.(userId, nextStatus[currentStatus]);
   };
 
-  const renderPlayer = (reg: Registration, index: number) => {
+  const renderPlayer = (reg: Registration, index: number, showStatus = true) => {
     const profile = reg.profiles;
     if (!profile) return null;
 
@@ -54,10 +56,24 @@ export function PlayerList({ registrations, isAdmin, onStatusChange }: PlayerLis
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Badge className={status.className}>
-            <StatusIcon className="h-3 w-3 mr-1" />
-            {status.label}
-          </Badge>
+          {showStatus && (
+            <Badge className={status.className}>
+              <StatusIcon className="h-3 w-3 mr-1" />
+              {status.label}
+            </Badge>
+          )}
+          {isAdmin && reg.payment_proof_url && (
+            <Button
+              size="sm"
+              variant="outline"
+              asChild
+            >
+              <a href={reg.payment_proof_url} target="_blank" rel="noopener noreferrer">
+                <FileText className="h-3 w-3 mr-1" />
+                Ver
+              </a>
+            </Button>
+          )}
           {isAdmin && (
             <Button
               size="sm"
@@ -74,20 +90,22 @@ export function PlayerList({ registrations, isAdmin, onStatusChange }: PlayerLis
 
   return (
     <div className="space-y-6">
+      {/* Confirmed Linha Players - Main List */}
       <div>
         <div className="flex items-center gap-2 mb-4">
-          <UserIcon className="h-5 w-5 text-primary" />
-          <h3 className="text-lg font-bold">Jogadores de Linha ({linhaPlayers.length})</h3>
+          <UserIcon className="h-5 w-5 text-success" />
+          <h3 className="text-lg font-bold">Jogadores Confirmados ({linhaConfirmed.length})</h3>
         </div>
         <div className="space-y-2">
-          {linhaPlayers.length === 0 ? (
-            <p className="text-muted-foreground text-center py-4">Nenhum jogador inscrito</p>
+          {linhaConfirmed.length === 0 ? (
+            <p className="text-muted-foreground text-center py-4">Nenhum jogador confirmado ainda</p>
           ) : (
-            linhaPlayers.map((reg, idx) => renderPlayer(reg, idx))
+            linhaConfirmed.map((reg, idx) => renderPlayer(reg, idx, false))
           )}
         </div>
       </div>
 
+      {/* Goleiros */}
       <div>
         <div className="flex items-center gap-2 mb-4">
           <UserIcon className="h-5 w-5 text-accent" />
@@ -97,10 +115,33 @@ export function PlayerList({ registrations, isAdmin, onStatusChange }: PlayerLis
           {goleiros.length === 0 ? (
             <p className="text-muted-foreground text-center py-4">Nenhum goleiro inscrito</p>
           ) : (
-            goleiros.map((reg, idx) => renderPlayer(reg, idx))
+            goleiros.map((reg, idx) => renderPlayer(reg, idx, false))
           )}
         </div>
       </div>
+
+      {/* Pending Linha Players - Admin Only or visible count */}
+      {(isAdmin || linhaPending.length > 0) && (
+        <div className="border-t pt-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Clock className="h-5 w-5 text-warning" />
+            <h3 className="text-lg font-bold">Aguardando Confirmação ({linhaPending.length})</h3>
+          </div>
+          {isAdmin ? (
+            <div className="space-y-2">
+              {linhaPending.length === 0 ? (
+                <p className="text-muted-foreground text-center py-4">Nenhum jogador pendente</p>
+              ) : (
+                linhaPending.map((reg, idx) => renderPlayer(reg, idx))
+              )}
+            </div>
+          ) : (
+            <p className="text-muted-foreground text-center py-4">
+              {linhaPending.length} jogador(es) aguardando confirmação de pagamento
+            </p>
+          )}
+        </div>
+      )}
     </div>
   );
 }

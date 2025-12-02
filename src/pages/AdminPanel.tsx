@@ -24,6 +24,7 @@ export default function AdminPanel() {
     price: '',
     maxLinhaPlayers: '24',
     maxGoleiros: '3',
+    pixKey: '',
   });
 
   if (authLoading) {
@@ -65,6 +66,7 @@ export default function AdminPanel() {
       max_goleiros: parseInt(formData.maxGoleiros),
       is_open: true,
       created_by: user.id,
+      pix_key: formData.pixKey || null,
     });
 
     setFormData({
@@ -76,6 +78,7 @@ export default function AdminPanel() {
       price: '',
       maxLinhaPlayers: '24',
       maxGoleiros: '3',
+      pixKey: '',
     });
     setSubmitting(false);
   };
@@ -179,6 +182,20 @@ export default function AdminPanel() {
                   placeholder="25.00"
                   value={formData.price}
                   onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="pixKey" className="flex items-center gap-2">
+                  <DollarSign className="h-4 w-4" />
+                  Chave PIX
+                </Label>
+                <Input
+                  id="pixKey"
+                  placeholder="Ex: email@exemplo.com ou CPF"
+                  value={formData.pixKey}
+                  onChange={(e) => setFormData({ ...formData, pixKey: e.target.value })}
                   required
                 />
               </div>
