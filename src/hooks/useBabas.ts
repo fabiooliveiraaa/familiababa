@@ -143,12 +143,18 @@ export function useBabaRegistrations(babaId: string) {
       return;
     }
 
-    // Fetch profiles for all users
-    const userIds = regsData.map(r => r.user_id);
-    const { data: profilesData } = await supabase
-      .from('profiles')
-      .select('id, first_name, last_name, avatar_url')
-      .in('id', userIds);
+    // Fetch profiles for all users (filter out null user_ids from mensalistas)
+    const userIds = regsData.map(r => r.user_id).filter((id): id is string => id !== null);
+    
+    let profilesData: { id: string; first_name: string; last_name: string; avatar_url: string | null }[] = [];
+    
+    if (userIds.length > 0) {
+      const { data } = await supabase
+        .from('profiles')
+        .select('id, first_name, last_name, avatar_url')
+        .in('id', userIds);
+      profilesData = data || [];
+    }
 
     // Merge profiles with registrations
     const profilesMap = new Map(profilesData?.map(p => [p.id, p]) || []);
