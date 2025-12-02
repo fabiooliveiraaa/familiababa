@@ -1,1 +1,7 @@
 project_id = "onnacsacitlpahspjbsb"
+
+[functions.team-draw]
+verify_jwt = true
+
+[functions.generate-banner]
+verify_jwt = true

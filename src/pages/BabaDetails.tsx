@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Header } from '@/components/Header';
 import { PlayerList } from '@/components/PlayerList';
 import { BabaVoting } from '@/components/BabaVoting';
+import { AdminAITools } from '@/components/AdminAITools';
 import { useBabas, useBabaRegistrations } from '@/hooks/useBabas';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { format, parseISO } from 'date-fns';
@@ -438,6 +439,10 @@ export default function BabaDetails() {
                   >
                     <Download className="h-4 w-4 mr-2" /> Exportar Lista
                   </Button>
+
+                  <div className="border-t pt-3 mt-3">
+                    <AdminAITools baba={baba} registrations={registrations} />
+                  </div>
 
                   {!baba.is_open && (
                     <AlertDialog>
