@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Shuffle, Image, Loader2, Download, Users, Trophy, Share2, Star } from 'lucide-react';
+import { Shuffle, Image, Loader2, Download, Users, Trophy, Share2, Star, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -13,6 +13,7 @@ import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Baba, Registration } from '@/hooks/useBabas';
 import { StarRating } from '@/components/StarRating';
+import { useBabaVotes } from '@/hooks/useBabaVotes';
 
 interface AdminAIToolsProps {
   baba: Baba;
@@ -52,6 +53,10 @@ export function AdminAITools({ baba, registrations }: AdminAIToolsProps) {
   // Estado para ratings manuais dos jogadores
   const [playerRatings, setPlayerRatings] = useState<PlayerRating[]>([]);
   const [ratingsConfigured, setRatingsConfigured] = useState(false);
+
+  // Hook para obter ranking de votação
+  const { ranking } = useBabaVotes(baba.id);
+  const topVotedPlayer = ranking.length > 0 ? ranking[0] : null;
 
   const confirmedPlayers = registrations.filter(r => r.status === 'confirmado');
 
@@ -111,6 +116,16 @@ export function AdminAITools({ baba, registrations }: AdminAIToolsProps) {
   };
 
   const handleGenerateBanner = async (type: 'promotional' | 'teams' | 'bestPlayer') => {
+    // Verificar se há jogador votado para banner do craque
+    if (type === 'bestPlayer' && !topVotedPlayer) {
+      toast({ 
+        title: 'Nenhum voto registrado', 
+        description: 'Aguarde os jogadores votarem no craque do baba',
+        variant: 'destructive' 
+      });
+      return;
+    }
+
     setBannerType(type);
     setLoadingBanner(true);
     setBannerUrl(null);
@@ -125,8 +140,10 @@ export function AdminAITools({ baba, registrations }: AdminAIToolsProps) {
         price: baba.price,
       };
 
-      const playerInfo = type === 'bestPlayer' ? {
-        name: 'Jogador Destaque'
+      // Usar automaticamente o jogador mais votado
+      const playerInfo = type === 'bestPlayer' && topVotedPlayer ? {
+        name: `${topVotedPlayer.profile?.first_name} ${topVotedPlayer.profile?.last_name}`.trim(),
+        votes: topVotedPlayer.vote_count
       } : undefined;
 
       const { data, error } = await supabase.functions.invoke('generate-banner', {
@@ -442,11 +459,21 @@ export function AdminAITools({ baba, registrations }: AdminAIToolsProps) {
                   variant="outline" 
                   className="w-full justify-start h-auto py-3"
                   onClick={() => handleGenerateBanner('bestPlayer')}
+                  disabled={!topVotedPlayer}
                 >
                   <Trophy className="h-5 w-5 mr-3" />
                   <div className="text-left">
                     <p className="font-medium">Craque do Baba</p>
-                    <p className="text-xs text-muted-foreground">Destaque do melhor jogador</p>
+                    {topVotedPlayer ? (
+                      <p className="text-xs text-muted-foreground">
+                        {topVotedPlayer.profile?.first_name} {topVotedPlayer.profile?.last_name} ({topVotedPlayer.vote_count} votos)
+                      </p>
+                    ) : (
+                      <p className="text-xs text-destructive flex items-center gap-1">
+                        <AlertCircle className="h-3 w-3" />
+                        Aguardando votos dos jogadores
+                      </p>
+                    )}
                   </div>
                 </Button>
               </div>
