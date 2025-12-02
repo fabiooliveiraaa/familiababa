@@ -23,9 +23,11 @@ export interface Registration {
   baba_id: string;
   user_id: string;
   position: 'linha' | 'goleiro';
-  status: 'inscrito' | 'pago' | 'confirmado';
+  status: 'inscrito' | 'pago' | 'confirmado' | 'lista_espera';
   registered_at: string;
   payment_proof_url: string | null;
+  is_mensalista: boolean;
+  waiting_position: number | null;
   profiles?: {
     id: string;
     first_name: string;
@@ -180,9 +182,24 @@ export function useBabaRegistrations(babaId: string) {
     }
   }, [babaId]);
 
-  const register = async (userId: string, position: 'linha' | 'goleiro', paymentProofUrl?: string) => {
+  const register = async (userId: string, position: 'linha' | 'goleiro', paymentProofUrl?: string, isWaitingList = false) => {
     // Goleiros go directly to confirmed status
-    const status = position === 'goleiro' ? 'confirmado' : 'inscrito';
+    let status: 'inscrito' | 'pago' | 'confirmado' | 'lista_espera' = position === 'goleiro' ? 'confirmado' : 'inscrito';
+    let waitingPosition: number | null = null;
+    
+    if (isWaitingList) {
+      status = 'lista_espera';
+      // Get next waiting position
+      const { data: waitingData } = await supabase
+        .from('registrations')
+        .select('waiting_position')
+        .eq('baba_id', babaId)
+        .eq('status', 'lista_espera')
+        .order('waiting_position', { ascending: false })
+        .limit(1);
+      
+      waitingPosition = (waitingData?.[0]?.waiting_position || 0) + 1;
+    }
     
     const { error } = await supabase
       .from('registrations')
@@ -192,6 +209,7 @@ export function useBabaRegistrations(babaId: string) {
         position,
         status,
         payment_proof_url: paymentProofUrl || null,
+        waiting_position: waitingPosition,
       });
     
     if (error) {
@@ -204,11 +222,53 @@ export function useBabaRegistrations(babaId: string) {
       return false;
     }
     
-    toast({ title: 'Inscrição realizada!' });
+    toast({ title: isWaitingList ? 'Adicionado à lista de espera!' : 'Inscrição realizada!' });
     return true;
   };
 
-  const updateStatus = async (userId: string, status: 'inscrito' | 'pago' | 'confirmado') => {
+  const registerMensalista = async (userId: string) => {
+    const { error } = await supabase
+      .from('registrations')
+      .insert({
+        baba_id: babaId,
+        user_id: userId,
+        position: 'linha',
+        status: 'confirmado',
+        is_mensalista: true,
+      });
+    
+    if (error) {
+      console.error('Error registering mensalista:', error);
+      if (error.code === '23505') {
+        toast({ title: 'Este jogador já está inscrito', variant: 'destructive' });
+      } else {
+        toast({ title: 'Erro ao adicionar mensalista', description: error.message, variant: 'destructive' });
+      }
+      return false;
+    }
+    
+    toast({ title: 'Mensalista adicionado!' });
+    return true;
+  };
+
+  const promoteFromWaitingList = async (userId: string) => {
+    const { error } = await supabase
+      .from('registrations')
+      .update({ status: 'confirmado', waiting_position: null })
+      .eq('baba_id', babaId)
+      .eq('user_id', userId);
+    
+    if (error) {
+      console.error('Error promoting from waiting list:', error);
+      toast({ title: 'Erro ao promover jogador', variant: 'destructive' });
+      return false;
+    }
+    
+    toast({ title: 'Jogador promovido para lista principal!' });
+    return true;
+  };
+
+  const updateStatus = async (userId: string, status: 'inscrito' | 'pago' | 'confirmado' | 'lista_espera') => {
     const { error } = await supabase
       .from('registrations')
       .update({ status })
@@ -238,5 +298,5 @@ export function useBabaRegistrations(babaId: string) {
     return true;
   };
 
-  return { registrations, loading, register, updateStatus, removeRegistration, refetch: fetchRegistrations };
+  return { registrations, loading, register, registerMensalista, promoteFromWaitingList, updateStatus, removeRegistration, refetch: fetchRegistrations };
 }

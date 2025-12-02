@@ -158,29 +158,35 @@ export type Database = {
         Row: {
           baba_id: string
           id: string
+          is_mensalista: boolean
           payment_proof_url: string | null
           position: Database["public"]["Enums"]["player_position"]
           registered_at: string
           status: Database["public"]["Enums"]["registration_status"]
           user_id: string
+          waiting_position: number | null
         }
         Insert: {
           baba_id: string
           id?: string
+          is_mensalista?: boolean
           payment_proof_url?: string | null
           position: Database["public"]["Enums"]["player_position"]
           registered_at?: string
           status?: Database["public"]["Enums"]["registration_status"]
           user_id: string
+          waiting_position?: number | null
         }
         Update: {
           baba_id?: string
           id?: string
+          is_mensalista?: boolean
           payment_proof_url?: string | null
           position?: Database["public"]["Enums"]["player_position"]
           registered_at?: string
           status?: Database["public"]["Enums"]["registration_status"]
           user_id?: string
+          waiting_position?: number | null
         }
         Relationships: [
           {
@@ -226,7 +232,7 @@ export type Database = {
     Enums: {
       app_role: "admin" | "user"
       player_position: "linha" | "goleiro"
-      registration_status: "inscrito" | "pago" | "confirmado"
+      registration_status: "inscrito" | "pago" | "confirmado" | "lista_espera"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -356,7 +362,7 @@ export const Constants = {
     Enums: {
       app_role: ["admin", "user"],
       player_position: ["linha", "goleiro"],
-      registration_status: ["inscrito", "pago", "confirmado"],
+      registration_status: ["inscrito", "pago", "confirmado", "lista_espera"],
     },
   },
 } as const
