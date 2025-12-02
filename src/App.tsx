@@ -9,6 +9,7 @@ import Auth from "./pages/Auth";
 import BabaDetails from "./pages/BabaDetails";
 import AdminPanel from "./pages/AdminPanel";
 import Profile from "./pages/Profile";
+import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +27,7 @@ const App = () => (
             <Route path="/baba/:id" element={<BabaDetails />} />
             <Route path="/admin" element={<AdminPanel />} />
             <Route path="/profile/:id" element={<Profile />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
