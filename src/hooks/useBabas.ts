@@ -97,7 +97,23 @@ export function useBabas() {
     }
   };
 
-  return { babas, loading, createBaba, toggleBabaOpen, refetch: fetchBabas };
+  const deleteBaba = async (babaId: string) => {
+    const { error } = await supabase
+      .from('babas')
+      .delete()
+      .eq('id', babaId);
+    
+    if (error) {
+      console.error('Error deleting baba:', error);
+      toast({ title: 'Erro ao excluir baba', variant: 'destructive' });
+      return false;
+    }
+    
+    toast({ title: 'Baba excluído com sucesso!' });
+    return true;
+  };
+
+  return { babas, loading, createBaba, toggleBabaOpen, deleteBaba, refetch: fetchBabas };
 }
 
 export function useBabaRegistrations(babaId: string) {
@@ -205,5 +221,22 @@ export function useBabaRegistrations(babaId: string) {
     }
   };
 
-  return { registrations, loading, register, updateStatus, refetch: fetchRegistrations };
+  const removeRegistration = async (userId: string) => {
+    const { error } = await supabase
+      .from('registrations')
+      .delete()
+      .eq('baba_id', babaId)
+      .eq('user_id', userId);
+    
+    if (error) {
+      console.error('Error removing registration:', error);
+      toast({ title: 'Erro ao remover jogador', variant: 'destructive' });
+      return false;
+    }
+    
+    toast({ title: 'Jogador removido da lista!' });
+    return true;
+  };
+
+  return { registrations, loading, register, updateStatus, removeRegistration, refetch: fetchRegistrations };
 }

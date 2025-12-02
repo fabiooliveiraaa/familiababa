@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Calendar, Clock, MapPin, DollarSign, Users, Lock, Unlock, Loader2, Upload, Copy, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock, MapPin, DollarSign, Users, Lock, Unlock, Loader2, Upload, Copy, CheckCircle, Trash2, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -19,12 +19,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 export default function BabaDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { babas, loading: babasLoading, toggleBabaOpen } = useBabas();
-  const { registrations, loading: regsLoading, register, updateStatus } = useBabaRegistrations(id || '');
+  const { babas, loading: babasLoading, toggleBabaOpen, deleteBaba } = useBabas();
+  const { registrations, loading: regsLoading, register, updateStatus, removeRegistration } = useBabaRegistrations(id || '');
   const { user, isAdmin } = useAuthContext();
   const [selectedPosition, setSelectedPosition] = useState<'linha' | 'goleiro'>('linha');
   const [uploading, setUploading] = useState(false);
@@ -68,7 +79,6 @@ export default function BabaDetails() {
     if (isUserRegistered) return false;
     if (selectedPosition === 'linha' && linhaCount >= baba.max_linha_players) return false;
     if (selectedPosition === 'goleiro' && goleiroCount >= baba.max_goleiros) return false;
-    // Linha players need payment proof
     if (selectedPosition === 'linha' && !paymentProofFile) return false;
     return true;
   };
@@ -102,7 +112,6 @@ export default function BabaDetails() {
     setUploading(true);
     let paymentProofUrl: string | undefined;
 
-    // Upload payment proof for linha players
     if (selectedPosition === 'linha' && paymentProofFile) {
       const fileExt = paymentProofFile.name.split('.').pop();
       const fileName = `${user.id}/${id}_${Date.now()}.${fileExt}`;
@@ -128,6 +137,44 @@ export default function BabaDetails() {
 
   const handleStatusChange = (userId: string, newStatus: 'inscrito' | 'pago' | 'confirmado') => {
     updateStatus(userId, newStatus);
+  };
+
+  const handleRemovePlayer = async (userId: string) => {
+    await removeRegistration(userId);
+  };
+
+  const handleDeleteBaba = async () => {
+    const success = await deleteBaba(baba.id);
+    if (success) {
+      navigate('/');
+    }
+  };
+
+  const handleExportList = () => {
+    const confirmedLinhaPlayers = registrations
+      .filter((r) => r.position === 'linha' && r.status === 'confirmado')
+      .map((r, idx) => `${idx + 1}. ${r.profiles?.first_name} ${r.profiles?.last_name}`)
+      .join('\n');
+
+    const goleiros = registrations
+      .filter((r) => r.position === 'goleiro')
+      .map((r, idx) => `${idx + 1}. ${r.profiles?.first_name} ${r.profiles?.last_name}`)
+      .join('\n');
+
+    const content = `${baba.title} - ${format(parseISO(baba.date), "dd/MM/yyyy", { locale: ptBR })}\n\n` +
+      `JOGADORES CONFIRMADOS (${registrations.filter(r => r.position === 'linha' && r.status === 'confirmado').length}):\n${confirmedLinhaPlayers || 'Nenhum'}\n\n` +
+      `GOLEIROS (${registrations.filter(r => r.position === 'goleiro').length}):\n${goleiros || 'Nenhum'}`;
+
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${baba.title.replace(/\s+/g, '_')}_${baba.date}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast({ title: 'Lista exportada!' });
   };
 
   return (
@@ -237,7 +284,6 @@ export default function BabaDetails() {
                         </SelectContent>
                       </Select>
 
-                      {/* Payment proof upload for linha players */}
                       {selectedPosition === 'linha' && (
                         <div className="space-y-2">
                           <p className="text-sm text-muted-foreground">
@@ -304,7 +350,7 @@ export default function BabaDetails() {
               )}
 
               {isAdmin && (
-                <div className="border-t pt-4">
+                <div className="border-t pt-4 space-y-3">
                   <Button
                     variant={baba.is_open ? 'destructive' : 'default'}
                     className="w-full"
@@ -320,6 +366,38 @@ export default function BabaDetails() {
                       </>
                     )}
                   </Button>
+
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={handleExportList}
+                  >
+                    <Download className="h-4 w-4 mr-2" /> Exportar Lista
+                  </Button>
+
+                  {!baba.is_open && (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="destructive" className="w-full">
+                          <Trash2 className="h-4 w-4 mr-2" /> Excluir Baba
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Excluir Baba?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Esta ação não pode ser desfeita. Todas as inscrições serão removidas permanentemente.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                          <AlertDialogAction onClick={handleDeleteBaba}>
+                            Excluir
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  )}
                 </div>
               )}
             </CardContent>
@@ -335,6 +413,7 @@ export default function BabaDetails() {
                 registrations={registrations}
                 isAdmin={isAdmin}
                 onStatusChange={handleStatusChange}
+                onRemovePlayer={handleRemovePlayer}
               />
             </CardContent>
           </Card>
