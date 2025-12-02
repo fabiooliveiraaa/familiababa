@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Calendar, Clock, MapPin, DollarSign, Users, Lock, Unlock, Loader2, Upload, Copy, CheckCircle, Trash2, Download } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock, MapPin, DollarSign, Users, Lock, Unlock, Loader2, Upload, Copy, CheckCircle, Trash2, Download, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -10,7 +10,7 @@ import { useBabas, useBabaRegistrations } from '@/hooks/useBabas';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import {
@@ -31,18 +31,51 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+
+interface Profile {
+  id: string;
+  first_name: string;
+  last_name: string;
+  avatar_url: string | null;
+}
 
 export default function BabaDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { babas, loading: babasLoading, toggleBabaOpen, deleteBaba } = useBabas();
-  const { registrations, loading: regsLoading, register, updateStatus, removeRegistration } = useBabaRegistrations(id || '');
+  const { registrations, loading: regsLoading, register, registerMensalista, promoteFromWaitingList, updateStatus, removeRegistration } = useBabaRegistrations(id || '');
   const { user, isAdmin } = useAuthContext();
   const [selectedPosition, setSelectedPosition] = useState<'linha' | 'goleiro'>('linha');
   const [uploading, setUploading] = useState(false);
   const [paymentProofFile, setPaymentProofFile] = useState<File | null>(null);
   const [copied, setCopied] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [mensalistaDialogOpen, setMensalistaDialogOpen] = useState(false);
+  const [allProfiles, setAllProfiles] = useState<Profile[]>([]);
+  const [selectedMensalista, setSelectedMensalista] = useState<string>('');
+  const [loadingProfiles, setLoadingProfiles] = useState(false);
+
+  useEffect(() => {
+    const fetchProfiles = async () => {
+      if (mensalistaDialogOpen && allProfiles.length === 0) {
+        setLoadingProfiles(true);
+        const { data } = await supabase
+          .from('profiles')
+          .select('id, first_name, last_name, avatar_url')
+          .order('first_name');
+        setAllProfiles(data || []);
+        setLoadingProfiles(false);
+      }
+    };
+    fetchProfiles();
+  }, [mensalistaDialogOpen]);
 
   const baba = babas.find((b) => b.id === id);
 
@@ -69,19 +102,33 @@ export default function BabaDetails() {
     );
   }
 
-  const linhaCount = registrations.filter((r) => r.position === 'linha').length;
+  const linhaCount = registrations.filter((r) => r.position === 'linha' && r.status !== 'lista_espera').length;
   const goleiroCount = registrations.filter((r) => r.position === 'goleiro').length;
   const confirmedCount = registrations.filter((r) => r.status === 'confirmado').length;
 
   const isUserRegistered = user && registrations.some((r) => r.user_id === user.id);
+  const isLinhaFull = linhaCount >= baba.max_linha_players;
+  const isGoleiroFull = goleiroCount >= baba.max_goleiros;
 
   const canRegister = () => {
     if (!baba.is_open) return false;
     if (isUserRegistered) return false;
-    if (selectedPosition === 'linha' && linhaCount >= baba.max_linha_players) return false;
-    if (selectedPosition === 'goleiro' && goleiroCount >= baba.max_goleiros) return false;
+    if (selectedPosition === 'goleiro' && isGoleiroFull) return false;
     if (selectedPosition === 'linha' && !paymentProofFile) return false;
     return true;
+  };
+
+  const handleAddMensalista = async () => {
+    if (!selectedMensalista) return;
+    const success = await registerMensalista(selectedMensalista);
+    if (success) {
+      setSelectedMensalista('');
+      setMensalistaDialogOpen(false);
+    }
+  };
+
+  const handlePromoteFromWaitingList = async (userId: string) => {
+    await promoteFromWaitingList(userId);
   };
 
   const handleCopyPix = async () => {
@@ -131,12 +178,12 @@ export default function BabaDetails() {
       paymentProofUrl = urlData.publicUrl;
     }
 
-    await register(user.id, selectedPosition, paymentProofUrl);
+    await register(user.id, selectedPosition, paymentProofUrl, isLinhaFull && selectedPosition === 'linha');
     setPaymentProofFile(null);
     setUploading(false);
   };
 
-  const handleStatusChange = (userId: string, newStatus: 'inscrito' | 'pago' | 'confirmado') => {
+  const handleStatusChange = (userId: string, newStatus: 'inscrito' | 'pago' | 'confirmado' | 'lista_espera') => {
     updateStatus(userId, newStatus);
   };
 
@@ -276,14 +323,20 @@ export default function BabaDetails() {
                           <SelectValue placeholder="Posição" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="linha" disabled={linhaCount >= baba.max_linha_players}>
-                            Jogador de Linha {linhaCount >= baba.max_linha_players && '(Cheio)'}
+                          <SelectItem value="linha">
+                            Jogador de Linha {isLinhaFull && '(Lista de Espera)'}
                           </SelectItem>
-                          <SelectItem value="goleiro" disabled={goleiroCount >= baba.max_goleiros}>
-                            Goleiro (não paga) {goleiroCount >= baba.max_goleiros && '(Cheio)'}
+                          <SelectItem value="goleiro" disabled={isGoleiroFull}>
+                            Goleiro (não paga) {isGoleiroFull && '(Cheio)'}
                           </SelectItem>
                         </SelectContent>
                       </Select>
+
+                      {selectedPosition === 'linha' && isLinhaFull && (
+                        <p className="text-sm text-warning bg-warning/10 p-2 rounded">
+                          ⚠️ As vagas estão cheias. Você será adicionado à lista de espera.
+                        </p>
+                      )}
 
                       {selectedPosition === 'linha' && (
                         <div className="space-y-2">
@@ -328,6 +381,8 @@ export default function BabaDetails() {
                             <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                             Enviando...
                           </>
+                        ) : isLinhaFull && selectedPosition === 'linha' ? (
+                          'Entrar na Lista de Espera'
                         ) : (
                           'Inscrever-se'
                         )}
@@ -352,6 +407,51 @@ export default function BabaDetails() {
 
               {isAdmin && (
                 <div className="border-t pt-4 space-y-3">
+                  <Dialog open={mensalistaDialogOpen} onOpenChange={setMensalistaDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button variant="secondary" className="w-full">
+                        <UserPlus className="h-4 w-4 mr-2" /> Inserir Mensalista
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Adicionar Mensalista 👑</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-4 pt-4">
+                        <p className="text-sm text-muted-foreground">
+                          Mensalistas são adicionados diretamente como confirmados na lista principal.
+                        </p>
+                        {loadingProfiles ? (
+                          <div className="flex justify-center py-4">
+                            <Loader2 className="h-6 w-6 animate-spin" />
+                          </div>
+                        ) : (
+                          <Select value={selectedMensalista} onValueChange={setSelectedMensalista}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Selecione um jogador" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {allProfiles
+                                .filter(p => !registrations.some(r => r.user_id === p.id))
+                                .map(profile => (
+                                  <SelectItem key={profile.id} value={profile.id}>
+                                    {profile.first_name} {profile.last_name}
+                                  </SelectItem>
+                                ))}
+                            </SelectContent>
+                          </Select>
+                        )}
+                        <Button 
+                          className="w-full" 
+                          onClick={handleAddMensalista}
+                          disabled={!selectedMensalista}
+                        >
+                          Adicionar Mensalista
+                        </Button>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+
                   <Button
                     variant={baba.is_open ? 'destructive' : 'default'}
                     className="w-full"
@@ -415,6 +515,7 @@ export default function BabaDetails() {
                 isAdmin={isAdmin}
                 onStatusChange={handleStatusChange}
                 onRemovePlayer={handleRemovePlayer}
+                onPromoteFromWaitingList={handlePromoteFromWaitingList}
               />
             </CardContent>
           </Card>
