@@ -18,7 +18,8 @@ export default function AdminPanel() {
   const [formData, setFormData] = useState({
     title: '',
     date: '',
-    time: '',
+    startTime: '',
+    endTime: '',
     location: '',
     price: '',
     maxLinhaPlayers: '24',
@@ -56,7 +57,8 @@ export default function AdminPanel() {
     await createBaba({
       title: formData.title,
       date: formData.date,
-      time: formData.time,
+      start_time: formData.startTime,
+      end_time: formData.endTime,
       location: formData.location,
       price: parseFloat(formData.price),
       max_linha_players: parseInt(formData.maxLinhaPlayers),
@@ -68,7 +70,8 @@ export default function AdminPanel() {
     setFormData({
       title: '',
       date: '',
-      time: '',
+      startTime: '',
+      endTime: '',
       location: '',
       price: '',
       maxLinhaPlayers: '24',
@@ -107,30 +110,44 @@ export default function AdminPanel() {
                 />
               </div>
 
+              <div className="space-y-2">
+                <Label htmlFor="date" className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4" />
+                  Data
+                </Label>
+                <Input
+                  id="date"
+                  type="date"
+                  value={formData.date}
+                  onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                  required
+                />
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="date" className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4" />
-                    Data
+                  <Label htmlFor="startTime" className="flex items-center gap-2">
+                    <Clock className="h-4 w-4" />
+                    Horário de Início
                   </Label>
                   <Input
-                    id="date"
-                    type="date"
-                    value={formData.date}
-                    onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                    id="startTime"
+                    type="time"
+                    value={formData.startTime}
+                    onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
                     required
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="time" className="flex items-center gap-2">
+                  <Label htmlFor="endTime" className="flex items-center gap-2">
                     <Clock className="h-4 w-4" />
-                    Horário
+                    Horário de Fim
                   </Label>
                   <Input
-                    id="time"
+                    id="endTime"
                     type="time"
-                    value={formData.time}
-                    onChange={(e) => setFormData({ ...formData, time: e.target.value })}
+                    value={formData.endTime}
+                    onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
                     required
                   />
                 </div>

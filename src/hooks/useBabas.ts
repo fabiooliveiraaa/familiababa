@@ -6,7 +6,8 @@ export interface Baba {
   id: string;
   title: string;
   date: string;
-  time: string;
+  start_time: string;
+  end_time: string;
   location: string;
   price: number;
   max_linha_players: number;
