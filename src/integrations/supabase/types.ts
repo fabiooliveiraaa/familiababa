@@ -25,6 +25,7 @@ export type Database = {
           location: string
           max_goleiros: number
           max_linha_players: number
+          pix_key: string | null
           price: number
           start_time: string
           title: string
@@ -40,6 +41,7 @@ export type Database = {
           location: string
           max_goleiros?: number
           max_linha_players?: number
+          pix_key?: string | null
           price: number
           start_time: string
           title: string
@@ -55,6 +57,7 @@ export type Database = {
           location?: string
           max_goleiros?: number
           max_linha_players?: number
+          pix_key?: string | null
           price?: number
           start_time?: string
           title?: string
@@ -93,6 +96,7 @@ export type Database = {
         Row: {
           baba_id: string
           id: string
+          payment_proof_url: string | null
           position: Database["public"]["Enums"]["player_position"]
           registered_at: string
           status: Database["public"]["Enums"]["registration_status"]
@@ -101,6 +105,7 @@ export type Database = {
         Insert: {
           baba_id: string
           id?: string
+          payment_proof_url?: string | null
           position: Database["public"]["Enums"]["player_position"]
           registered_at?: string
           status?: Database["public"]["Enums"]["registration_status"]
@@ -109,6 +114,7 @@ export type Database = {
         Update: {
           baba_id?: string
           id?: string
+          payment_proof_url?: string | null
           position?: Database["public"]["Enums"]["player_position"]
           registered_at?: string
           status?: Database["public"]["Enums"]["registration_status"]
