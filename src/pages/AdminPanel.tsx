@@ -1,17 +1,19 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Calendar, Clock, MapPin, DollarSign, Users } from 'lucide-react';
+import { ArrowLeft, Plus, Calendar, Clock, MapPin, DollarSign, Users, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Header } from '@/components/Header';
-import { useApp } from '@/contexts/AppContext';
-import { toast } from '@/hooks/use-toast';
+import { useBabas } from '@/hooks/useBabas';
+import { useAuthContext } from '@/contexts/AuthContext';
 
 export default function AdminPanel() {
   const navigate = useNavigate();
-  const { currentUser, createBaba } = useApp();
+  const { user, isAdmin, loading: authLoading } = useAuthContext();
+  const { createBaba } = useBabas();
+  const [submitting, setSubmitting] = useState(false);
   
   const [formData, setFormData] = useState({
     title: '',
@@ -23,7 +25,18 @@ export default function AdminPanel() {
     maxGoleiros: '3',
   });
 
-  if (!currentUser || currentUser.role !== 'admin') {
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </div>
+    );
+  }
+
+  if (!user || !isAdmin) {
     return (
       <div className="min-h-screen bg-background">
         <Header />
@@ -36,33 +49,20 @@ export default function AdminPanel() {
     );
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitting(true);
     
-    if (!formData.title || !formData.date || !formData.time || !formData.location || !formData.price) {
-      toast({
-        title: 'Erro',
-        description: 'Preencha todos os campos obrigatórios.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    createBaba({
+    await createBaba({
       title: formData.title,
-      date: new Date(formData.date),
+      date: formData.date,
       time: formData.time,
       location: formData.location,
       price: parseFloat(formData.price),
-      maxLinhaPlayers: parseInt(formData.maxLinhaPlayers),
-      maxGoleiros: parseInt(formData.maxGoleiros),
-      isOpen: true,
-      createdBy: currentUser.id,
-    });
-
-    toast({
-      title: 'Baba criado!',
-      description: 'O novo baba foi adicionado com sucesso.',
+      max_linha_players: parseInt(formData.maxLinhaPlayers),
+      max_goleiros: parseInt(formData.maxGoleiros),
+      is_open: true,
+      created_by: user.id,
     });
 
     setFormData({
@@ -74,6 +74,7 @@ export default function AdminPanel() {
       maxLinhaPlayers: '24',
       maxGoleiros: '3',
     });
+    setSubmitting(false);
   };
 
   return (
@@ -102,6 +103,7 @@ export default function AdminPanel() {
                   placeholder="Ex: Baba Quarta-Feira"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  required
                 />
               </div>
 
@@ -116,6 +118,7 @@ export default function AdminPanel() {
                     type="date"
                     value={formData.date}
                     onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                    required
                   />
                 </div>
                 <div className="space-y-2">
@@ -128,6 +131,7 @@ export default function AdminPanel() {
                     type="time"
                     value={formData.time}
                     onChange={(e) => setFormData({ ...formData, time: e.target.value })}
+                    required
                   />
                 </div>
               </div>
@@ -142,6 +146,7 @@ export default function AdminPanel() {
                   placeholder="Ex: Arena FBFC"
                   value={formData.location}
                   onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                  required
                 />
               </div>
 
@@ -157,6 +162,7 @@ export default function AdminPanel() {
                   placeholder="25.00"
                   value={formData.price}
                   onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                  required
                 />
               </div>
 
@@ -175,6 +181,7 @@ export default function AdminPanel() {
                       type="number"
                       value={formData.maxLinhaPlayers}
                       onChange={(e) => setFormData({ ...formData, maxLinhaPlayers: e.target.value })}
+                      required
                     />
                   </div>
                   <div className="space-y-2">
@@ -186,14 +193,24 @@ export default function AdminPanel() {
                       type="number"
                       value={formData.maxGoleiros}
                       onChange={(e) => setFormData({ ...formData, maxGoleiros: e.target.value })}
+                      required
                     />
                   </div>
                 </div>
               </div>
 
-              <Button type="submit" className="w-full btn-glow" size="lg">
-                <Plus className="h-4 w-4 mr-2" />
-                Criar Baba
+              <Button type="submit" className="w-full btn-glow" size="lg" disabled={submitting}>
+                {submitting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Criando...
+                  </>
+                ) : (
+                  <>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Criar Baba
+                  </>
+                )}
               </Button>
             </form>
           </CardContent>

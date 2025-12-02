@@ -1,16 +1,15 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Calendar, Clock, MapPin, DollarSign, Users, Lock, Unlock } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock, MapPin, DollarSign, Users, Lock, Unlock, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Header } from '@/components/Header';
 import { PlayerList } from '@/components/PlayerList';
-import { useApp } from '@/contexts/AppContext';
-import { format } from 'date-fns';
+import { useBabas, useBabaRegistrations } from '@/hooks/useBabas';
+import { useAuthContext } from '@/contexts/AuthContext';
+import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useState } from 'react';
-import { PlayerPosition } from '@/types/baba';
-import { toast } from '@/hooks/use-toast';
 import {
   Select,
   SelectContent,
@@ -22,10 +21,23 @@ import {
 export default function BabaDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { babas, currentUser, registerForBaba, toggleBabaOpen } = useApp();
-  const [selectedPosition, setSelectedPosition] = useState<PlayerPosition>('linha');
+  const { babas, loading: babasLoading, toggleBabaOpen } = useBabas();
+  const { registrations, loading: regsLoading, register, updateStatus } = useBabaRegistrations(id || '');
+  const { user, isAdmin } = useAuthContext();
+  const [selectedPosition, setSelectedPosition] = useState<'linha' | 'goleiro'>('linha');
 
   const baba = babas.find((b) => b.id === id);
+
+  if (babasLoading || regsLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </div>
+    );
+  }
 
   if (!baba) {
     return (
@@ -39,32 +51,31 @@ export default function BabaDetails() {
     );
   }
 
-  const linhaCount = baba.registrations.filter((r) => r.position === 'linha').length;
-  const goleiroCount = baba.registrations.filter((r) => r.position === 'goleiro').length;
-  const paidCount = baba.registrations.filter((r) => r.status === 'pago' || r.status === 'confirmado').length;
-  const confirmedCount = baba.registrations.filter((r) => r.status === 'confirmado').length;
+  const linhaCount = registrations.filter((r) => r.position === 'linha').length;
+  const goleiroCount = registrations.filter((r) => r.position === 'goleiro').length;
+  const paidCount = registrations.filter((r) => r.status === 'pago' || r.status === 'confirmado').length;
+  const confirmedCount = registrations.filter((r) => r.status === 'confirmado').length;
 
-  const isUserRegistered = currentUser && baba.registrations.some((r) => r.oderId === currentUser.id);
-  const isAdmin = currentUser?.role === 'admin';
+  const isUserRegistered = user && registrations.some((r) => r.user_id === user.id);
 
   const canRegister = () => {
-    if (!baba.isOpen) return false;
+    if (!baba.is_open) return false;
     if (isUserRegistered) return false;
-    if (selectedPosition === 'linha' && linhaCount >= baba.maxLinhaPlayers) return false;
-    if (selectedPosition === 'goleiro' && goleiroCount >= baba.maxGoleiros) return false;
+    if (selectedPosition === 'linha' && linhaCount >= baba.max_linha_players) return false;
+    if (selectedPosition === 'goleiro' && goleiroCount >= baba.max_goleiros) return false;
     return true;
   };
 
-  const handleRegister = () => {
-    if (!currentUser) {
-      navigate('/login');
+  const handleRegister = async () => {
+    if (!user) {
+      navigate('/auth');
       return;
     }
-    registerForBaba(baba.id, currentUser.id, selectedPosition);
-    toast({
-      title: 'Inscrição realizada!',
-      description: `Você foi inscrito como ${selectedPosition === 'linha' ? 'jogador de linha' : 'goleiro'}.`,
-    });
+    await register(user.id, selectedPosition);
+  };
+
+  const handleStatusChange = (userId: string, newStatus: 'inscrito' | 'pago' | 'confirmado') => {
+    updateStatus(userId, newStatus);
   };
 
   return (
@@ -83,8 +94,8 @@ export default function BabaDetails() {
             <CardHeader className="bg-secondary">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-secondary-foreground">{baba.title}</CardTitle>
-                <Badge variant={baba.isOpen ? 'default' : 'secondary'} className={baba.isOpen ? 'bg-success' : ''}>
-                  {baba.isOpen ? 'Aberto' : 'Fechado'}
+                <Badge variant={baba.is_open ? 'default' : 'secondary'} className={baba.is_open ? 'bg-success' : ''}>
+                  {baba.is_open ? 'Aberto' : 'Fechado'}
                 </Badge>
               </div>
             </CardHeader>
@@ -92,7 +103,7 @@ export default function BabaDetails() {
               <div className="flex items-center gap-3">
                 <Calendar className="h-5 w-5 text-primary" />
                 <span className="font-medium">
-                  {format(baba.date, "EEEE, dd 'de' MMMM", { locale: ptBR })}
+                  {format(parseISO(baba.date), "EEEE, dd 'de' MMMM", { locale: ptBR })}
                 </span>
               </div>
               <div className="flex items-center gap-3">
@@ -105,7 +116,7 @@ export default function BabaDetails() {
               </div>
               <div className="flex items-center gap-3">
                 <DollarSign className="h-5 w-5 text-primary" />
-                <span className="font-bold text-lg">R$ {baba.price.toFixed(2)}</span>
+                <span className="font-bold text-lg">R$ {Number(baba.price).toFixed(2)}</span>
               </div>
 
               <div className="border-t pt-4 space-y-3">
@@ -115,11 +126,11 @@ export default function BabaDetails() {
                 </h4>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="bg-muted p-3 rounded-lg text-center">
-                    <p className="text-2xl font-bold text-foreground">{linhaCount}/{baba.maxLinhaPlayers}</p>
+                    <p className="text-2xl font-bold text-foreground">{linhaCount}/{baba.max_linha_players}</p>
                     <p className="text-xs text-muted-foreground">Linha</p>
                   </div>
                   <div className="bg-muted p-3 rounded-lg text-center">
-                    <p className="text-2xl font-bold text-foreground">{goleiroCount}/{baba.maxGoleiros}</p>
+                    <p className="text-2xl font-bold text-foreground">{goleiroCount}/{baba.max_goleiros}</p>
                     <p className="text-xs text-muted-foreground">Goleiros</p>
                   </div>
                 </div>
@@ -139,24 +150,24 @@ export default function BabaDetails() {
                 </div>
               </div>
 
-              {currentUser && !isAdmin && (
+              {user && !isAdmin && (
                 <div className="border-t pt-4 space-y-3">
                   {isUserRegistered ? (
                     <div className="bg-success/20 p-4 rounded-lg text-center">
                       <p className="font-semibold text-success">✓ Você está inscrito!</p>
                     </div>
-                  ) : baba.isOpen ? (
+                  ) : baba.is_open ? (
                     <>
-                      <Select value={selectedPosition} onValueChange={(v) => setSelectedPosition(v as PlayerPosition)}>
+                      <Select value={selectedPosition} onValueChange={(v) => setSelectedPosition(v as 'linha' | 'goleiro')}>
                         <SelectTrigger>
                           <SelectValue placeholder="Posição" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="linha" disabled={linhaCount >= baba.maxLinhaPlayers}>
-                            Jogador de Linha {linhaCount >= baba.maxLinhaPlayers && '(Cheio)'}
+                          <SelectItem value="linha" disabled={linhaCount >= baba.max_linha_players}>
+                            Jogador de Linha {linhaCount >= baba.max_linha_players && '(Cheio)'}
                           </SelectItem>
-                          <SelectItem value="goleiro" disabled={goleiroCount >= baba.maxGoleiros}>
-                            Goleiro {goleiroCount >= baba.maxGoleiros && '(Cheio)'}
+                          <SelectItem value="goleiro" disabled={goleiroCount >= baba.max_goleiros}>
+                            Goleiro {goleiroCount >= baba.max_goleiros && '(Cheio)'}
                           </SelectItem>
                         </SelectContent>
                       </Select>
@@ -173,14 +184,22 @@ export default function BabaDetails() {
                 </div>
               )}
 
+              {!user && (
+                <div className="border-t pt-4">
+                  <Button className="w-full" onClick={() => navigate('/auth')}>
+                    Entrar para se inscrever
+                  </Button>
+                </div>
+              )}
+
               {isAdmin && (
                 <div className="border-t pt-4">
                   <Button
-                    variant={baba.isOpen ? 'destructive' : 'default'}
+                    variant={baba.is_open ? 'destructive' : 'default'}
                     className="w-full"
-                    onClick={() => toggleBabaOpen(baba.id)}
+                    onClick={() => toggleBabaOpen(baba.id, baba.is_open)}
                   >
-                    {baba.isOpen ? (
+                    {baba.is_open ? (
                       <>
                         <Lock className="h-4 w-4 mr-2" /> Fechar Inscrições
                       </>
@@ -202,9 +221,9 @@ export default function BabaDetails() {
             </CardHeader>
             <CardContent>
               <PlayerList 
-                registrations={baba.registrations} 
-                babaId={baba.id}
+                registrations={registrations}
                 isAdmin={isAdmin}
+                onStatusChange={handleStatusChange}
               />
             </CardContent>
           </Card>
