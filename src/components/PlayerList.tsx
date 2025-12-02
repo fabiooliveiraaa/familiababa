@@ -1,8 +1,10 @@
 import { Check, Clock, DollarSign, User as UserIcon, FileText, Trash2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Registration } from '@/hooks/useBabas';
+import { StarRating } from '@/components/StarRating';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,6 +31,8 @@ const statusConfig = {
 };
 
 export function PlayerList({ registrations, isAdmin, onStatusChange, onRemovePlayer }: PlayerListProps) {
+  const navigate = useNavigate();
+  
   const linhaConfirmed = registrations.filter((r) => r.position === 'linha' && r.status === 'confirmado');
   const linhaPending = registrations.filter((r) => r.position === 'linha' && r.status !== 'confirmado');
   const goleiros = registrations.filter((r) => r.position === 'goleiro');
@@ -54,7 +58,10 @@ export function PlayerList({ registrations, isAdmin, onStatusChange, onRemovePla
         key={reg.id}
         className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
       >
-        <div className="flex items-center gap-3">
+        <div 
+          className="flex items-center gap-3 cursor-pointer hover:opacity-80"
+          onClick={() => navigate(`/profile/${reg.user_id}`)}
+        >
           <span className="text-sm font-bold text-muted-foreground w-6">{index + 1}</span>
           <Avatar className="h-10 w-10 border-2 border-primary/20">
             <AvatarImage src={profile.avatar_url || undefined} />
@@ -63,7 +70,7 @@ export function PlayerList({ registrations, isAdmin, onStatusChange, onRemovePla
             </AvatarFallback>
           </Avatar>
           <div>
-            <p className="font-medium text-foreground">{profile.first_name} {profile.last_name}</p>
+            <p className="font-medium text-foreground hover:underline">{profile.first_name} {profile.last_name}</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
