@@ -1,5 +1,6 @@
-import { Check, Clock, DollarSign, User as UserIcon, FileText, Trash2, Crown, ArrowUp } from 'lucide-react';
+import { Check, Clock, DollarSign, User as UserIcon, FileText, Trash2, ArrowUp, Eye, ExternalLink } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -15,6 +16,13 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 
 interface PlayerListProps {
   registrations: Registration[];
@@ -100,16 +108,62 @@ export function PlayerList({ registrations, isAdmin, onStatusChange, onRemovePla
             </Badge>
           )}
           {isAdmin && reg.payment_proof_url && (
-            <Button
-              size="sm"
-              variant="outline"
-              asChild
-            >
-              <a href={reg.payment_proof_url} target="_blank" rel="noopener noreferrer">
-                <FileText className="h-3 w-3 mr-1" />
-                Ver
-              </a>
-            </Button>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  className="bg-primary/20 hover:bg-primary/30 text-primary"
+                >
+                  <Eye className="h-3 w-3 mr-1" />
+                  Comprovante
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl">
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-2">
+                    <FileText className="h-5 w-5" />
+                    Comprovante de Pagamento - {displayName}
+                  </DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div className="bg-muted rounded-lg p-4 max-h-[60vh] overflow-auto">
+                    {reg.payment_proof_url.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (
+                      <img 
+                        src={reg.payment_proof_url} 
+                        alt="Comprovante de pagamento"
+                        className="w-full h-auto rounded-lg"
+                      />
+                    ) : (
+                      <div className="text-center py-8">
+                        <FileText className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+                        <p className="text-muted-foreground">Arquivo PDF ou outro formato</p>
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <Button
+                      variant="outline"
+                      asChild
+                    >
+                      <a href={reg.payment_proof_url} target="_blank" rel="noopener noreferrer">
+                        <ExternalLink className="h-4 w-4 mr-2" />
+                        Abrir em nova aba
+                      </a>
+                    </Button>
+                    {reg.user_id && (
+                      <Button
+                        onClick={() => handleStatusChange(reg.user_id!, 'confirmado')}
+                        className="bg-success hover:bg-success/90"
+                      >
+                        <Check className="h-4 w-4 mr-2" />
+                        Confirmar Pagamento
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
           )}
           {isAdmin && isWaitingList && reg.user_id && (
             <Button
