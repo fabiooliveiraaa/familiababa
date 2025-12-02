@@ -54,7 +54,15 @@ export function PlayerList({ registrations, isAdmin, onStatusChange, onRemovePla
 
   const renderPlayer = (reg: Registration, index: number, showStatus = true, isWaitingList = false) => {
     const profile = reg.profiles;
-    if (!profile) return null;
+    const isManualEntry = !profile && reg.manual_name;
+    
+    // Skip if no profile and no manual name
+    if (!profile && !isManualEntry) return null;
+
+    const displayName = isManualEntry ? reg.manual_name : `${profile?.first_name} ${profile?.last_name}`;
+    const initials = isManualEntry 
+      ? reg.manual_name!.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()
+      : `${profile?.first_name[0]}${profile?.last_name[0]}`;
 
     const status = statusConfig[reg.status];
     const StatusIcon = status.icon;
@@ -65,20 +73,20 @@ export function PlayerList({ registrations, isAdmin, onStatusChange, onRemovePla
         className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
       >
         <div 
-          className="flex items-center gap-3 cursor-pointer hover:opacity-80"
-          onClick={() => navigate(`/profile/${reg.user_id}`)}
+          className={`flex items-center gap-3 ${!isManualEntry ? 'cursor-pointer hover:opacity-80' : ''}`}
+          onClick={() => !isManualEntry && reg.user_id && navigate(`/profile/${reg.user_id}`)}
         >
           <span className="text-sm font-bold text-muted-foreground w-6">
             {isWaitingList ? reg.waiting_position : index + 1}
           </span>
           <Avatar className="h-10 w-10 border-2 border-primary/20">
-            <AvatarImage src={profile.avatar_url || undefined} />
+            <AvatarImage src={profile?.avatar_url || undefined} />
             <AvatarFallback className="bg-secondary text-secondary-foreground text-sm font-semibold">
-              {profile.first_name[0]}{profile.last_name[0]}
+              {initials}
             </AvatarFallback>
           </Avatar>
           <div className="flex items-center gap-2">
-            <p className="font-medium text-foreground hover:underline">{profile.first_name} {profile.last_name}</p>
+            <p className={`font-medium text-foreground ${!isManualEntry ? 'hover:underline' : ''}`}>{displayName}</p>
             {reg.is_mensalista && (
               <span title="Mensalista">👑</span>
             )}
@@ -103,21 +111,21 @@ export function PlayerList({ registrations, isAdmin, onStatusChange, onRemovePla
               </a>
             </Button>
           )}
-          {isAdmin && isWaitingList && (
+          {isAdmin && isWaitingList && reg.user_id && (
             <Button
               size="sm"
               variant="default"
-              onClick={() => onPromoteFromWaitingList?.(reg.user_id)}
+              onClick={() => onPromoteFromWaitingList?.(reg.user_id!)}
             >
               <ArrowUp className="h-3 w-3 mr-1" />
               Subir
             </Button>
           )}
-          {isAdmin && !isWaitingList && (
+          {isAdmin && !isWaitingList && !isManualEntry && reg.user_id && (
             <Button
               size="sm"
               variant="outline"
-              onClick={() => handleStatusChange(reg.user_id, reg.status)}
+              onClick={() => handleStatusChange(reg.user_id!, reg.status)}
             >
               Alterar
             </Button>
@@ -133,12 +141,12 @@ export function PlayerList({ registrations, isAdmin, onStatusChange, onRemovePla
                 <AlertDialogHeader>
                   <AlertDialogTitle>Remover jogador?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Tem certeza que deseja remover {profile.first_name} {profile.last_name} da lista?
+                    Tem certeza que deseja remover {displayName} da lista?
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                  <AlertDialogAction onClick={() => onRemovePlayer?.(reg.user_id)}>
+                  <AlertDialogAction onClick={() => onRemovePlayer?.(reg.id)}>
                     Remover
                   </AlertDialogAction>
                 </AlertDialogFooter>

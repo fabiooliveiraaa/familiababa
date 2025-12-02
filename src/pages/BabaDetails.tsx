@@ -10,7 +10,7 @@ import { useBabas, useBabaRegistrations } from '@/hooks/useBabas';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import {
@@ -39,13 +39,6 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 
-interface Profile {
-  id: string;
-  first_name: string;
-  last_name: string;
-  avatar_url: string | null;
-}
-
 export default function BabaDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -58,24 +51,7 @@ export default function BabaDetails() {
   const [copied, setCopied] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [mensalistaDialogOpen, setMensalistaDialogOpen] = useState(false);
-  const [allProfiles, setAllProfiles] = useState<Profile[]>([]);
-  const [selectedMensalista, setSelectedMensalista] = useState<string>('');
-  const [loadingProfiles, setLoadingProfiles] = useState(false);
-
-  useEffect(() => {
-    const fetchProfiles = async () => {
-      if (mensalistaDialogOpen && allProfiles.length === 0) {
-        setLoadingProfiles(true);
-        const { data } = await supabase
-          .from('profiles')
-          .select('id, first_name, last_name, avatar_url')
-          .order('first_name');
-        setAllProfiles(data || []);
-        setLoadingProfiles(false);
-      }
-    };
-    fetchProfiles();
-  }, [mensalistaDialogOpen]);
+  const [mensalistaName, setMensalistaName] = useState('');
 
   const baba = babas.find((b) => b.id === id);
 
@@ -119,10 +95,10 @@ export default function BabaDetails() {
   };
 
   const handleAddMensalista = async () => {
-    if (!selectedMensalista) return;
-    const success = await registerMensalista(selectedMensalista);
+    if (!mensalistaName.trim()) return;
+    const success = await registerMensalista(mensalistaName);
     if (success) {
-      setSelectedMensalista('');
+      setMensalistaName('');
       setMensalistaDialogOpen(false);
     }
   };
@@ -187,8 +163,8 @@ export default function BabaDetails() {
     updateStatus(userId, newStatus);
   };
 
-  const handleRemovePlayer = async (userId: string) => {
-    await removeRegistration(userId);
+  const handleRemovePlayer = async (registrationId: string) => {
+    await removeRegistration(registrationId);
   };
 
   const handleDeleteBaba = async () => {
@@ -421,30 +397,17 @@ export default function BabaDetails() {
                         <p className="text-sm text-muted-foreground">
                           Mensalistas são adicionados diretamente como confirmados na lista principal.
                         </p>
-                        {loadingProfiles ? (
-                          <div className="flex justify-center py-4">
-                            <Loader2 className="h-6 w-6 animate-spin" />
-                          </div>
-                        ) : (
-                          <Select value={selectedMensalista} onValueChange={setSelectedMensalista}>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Selecione um jogador" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {allProfiles
-                                .filter(p => !registrations.some(r => r.user_id === p.id))
-                                .map(profile => (
-                                  <SelectItem key={profile.id} value={profile.id}>
-                                    {profile.first_name} {profile.last_name}
-                                  </SelectItem>
-                                ))}
-                            </SelectContent>
-                          </Select>
-                        )}
+                        <input
+                          type="text"
+                          placeholder="Digite o nome do mensalista"
+                          value={mensalistaName}
+                          onChange={(e) => setMensalistaName(e.target.value)}
+                          className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                        />
                         <Button 
                           className="w-full" 
                           onClick={handleAddMensalista}
-                          disabled={!selectedMensalista}
+                          disabled={!mensalistaName.trim()}
                         >
                           Adicionar Mensalista
                         </Button>

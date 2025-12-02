@@ -159,33 +159,36 @@ export type Database = {
           baba_id: string
           id: string
           is_mensalista: boolean
+          manual_name: string | null
           payment_proof_url: string | null
           position: Database["public"]["Enums"]["player_position"]
           registered_at: string
           status: Database["public"]["Enums"]["registration_status"]
-          user_id: string
+          user_id: string | null
           waiting_position: number | null
         }
         Insert: {
           baba_id: string
           id?: string
           is_mensalista?: boolean
+          manual_name?: string | null
           payment_proof_url?: string | null
           position: Database["public"]["Enums"]["player_position"]
           registered_at?: string
           status?: Database["public"]["Enums"]["registration_status"]
-          user_id: string
+          user_id?: string | null
           waiting_position?: number | null
         }
         Update: {
           baba_id?: string
           id?: string
           is_mensalista?: boolean
+          manual_name?: string | null
           payment_proof_url?: string | null
           position?: Database["public"]["Enums"]["player_position"]
           registered_at?: string
           status?: Database["public"]["Enums"]["registration_status"]
-          user_id?: string
+          user_id?: string | null
           waiting_position?: number | null
         }
         Relationships: [

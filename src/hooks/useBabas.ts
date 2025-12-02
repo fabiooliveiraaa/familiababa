@@ -21,13 +21,14 @@ export interface Baba {
 export interface Registration {
   id: string;
   baba_id: string;
-  user_id: string;
+  user_id: string | null;
   position: 'linha' | 'goleiro';
   status: 'inscrito' | 'pago' | 'confirmado' | 'lista_espera';
   registered_at: string;
   payment_proof_url: string | null;
   is_mensalista: boolean;
   waiting_position: number | null;
+  manual_name: string | null;
   profiles?: {
     id: string;
     first_name: string;
@@ -226,24 +227,25 @@ export function useBabaRegistrations(babaId: string) {
     return true;
   };
 
-  const registerMensalista = async (userId: string) => {
+  const registerMensalista = async (manualName: string) => {
+    if (!manualName.trim()) {
+      toast({ title: 'Digite o nome do mensalista', variant: 'destructive' });
+      return false;
+    }
+    
     const { error } = await supabase
       .from('registrations')
       .insert({
         baba_id: babaId,
-        user_id: userId,
         position: 'linha',
         status: 'confirmado',
         is_mensalista: true,
+        manual_name: manualName.trim(),
       });
     
     if (error) {
       console.error('Error registering mensalista:', error);
-      if (error.code === '23505') {
-        toast({ title: 'Este jogador já está inscrito', variant: 'destructive' });
-      } else {
-        toast({ title: 'Erro ao adicionar mensalista', description: error.message, variant: 'destructive' });
-      }
+      toast({ title: 'Erro ao adicionar mensalista', description: error.message, variant: 'destructive' });
       return false;
     }
     
@@ -281,12 +283,11 @@ export function useBabaRegistrations(babaId: string) {
     }
   };
 
-  const removeRegistration = async (userId: string) => {
+  const removeRegistration = async (registrationId: string) => {
     const { error } = await supabase
       .from('registrations')
       .delete()
-      .eq('baba_id', babaId)
-      .eq('user_id', userId);
+      .eq('id', registrationId);
     
     if (error) {
       console.error('Error removing registration:', error);
