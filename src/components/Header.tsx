@@ -7,13 +7,18 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useApp } from '@/contexts/AppContext';
+import { useAuthContext } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import logo from '@/assets/logo-familia-baba.png';
 
 export function Header() {
-  const { currentUser, setCurrentUser } = useApp();
+  const { user, profile, isAdmin, signOut } = useAuthContext();
   const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/');
+  };
 
   return (
     <header className="sticky top-0 z-50 bg-secondary border-b border-border shadow-sm">
@@ -26,9 +31,9 @@ export function Header() {
           </div>
         </button>
 
-        {currentUser ? (
+        {user && profile ? (
           <div className="flex items-center gap-4">
-            {currentUser.role === 'admin' && (
+            {isAdmin && (
               <Button variant="outline" size="sm" onClick={() => navigate('/admin')} className="hidden sm:flex">
                 <Shield className="h-4 w-4 mr-2" />
                 Admin
@@ -38,24 +43,24 @@ export function Header() {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="flex items-center gap-2 px-2">
                   <Avatar className="h-8 w-8 border-2 border-primary">
-                    <AvatarImage src={currentUser.avatar} />
+                    <AvatarImage src={profile.avatar_url || undefined} />
                     <AvatarFallback className="bg-primary text-primary-foreground text-xs">
-                      {currentUser.firstName[0]}{currentUser.lastName[0]}
+                      {profile.first_name[0]}{profile.last_name[0]}
                     </AvatarFallback>
                   </Avatar>
                   <span className="hidden sm:inline text-sm font-medium">
-                    {currentUser.firstName}
+                    {profile.first_name}
                   </span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                {currentUser.role === 'admin' && (
+                {isAdmin && (
                   <DropdownMenuItem onClick={() => navigate('/admin')} className="sm:hidden">
                     <Shield className="h-4 w-4 mr-2" />
                     Admin
                   </DropdownMenuItem>
                 )}
-                <DropdownMenuItem onClick={() => setCurrentUser(null)}>
+                <DropdownMenuItem onClick={handleSignOut}>
                   <LogOut className="h-4 w-4 mr-2" />
                   Sair
                 </DropdownMenuItem>
@@ -63,7 +68,7 @@ export function Header() {
             </DropdownMenu>
           </div>
         ) : (
-          <Button onClick={() => navigate('/login')}>
+          <Button onClick={() => navigate('/auth')}>
             <User className="h-4 w-4 mr-2" />
             Entrar
           </Button>

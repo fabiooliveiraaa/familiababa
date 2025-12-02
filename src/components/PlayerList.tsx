@@ -1,40 +1,37 @@
 import { Check, Clock, DollarSign, User as UserIcon } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Registration, RegistrationStatus, User } from '@/types/baba';
 import { Button } from '@/components/ui/button';
-import { useApp } from '@/contexts/AppContext';
+import { Registration } from '@/hooks/useBabas';
 
 interface PlayerListProps {
   registrations: Registration[];
-  babaId: string;
   isAdmin?: boolean;
+  onStatusChange?: (userId: string, currentStatus: 'inscrito' | 'pago' | 'confirmado') => void;
 }
 
-const statusConfig: Record<RegistrationStatus, { label: string; icon: typeof Check; className: string }> = {
+const statusConfig = {
   inscrito: { label: 'Inscrito', icon: Clock, className: 'bg-muted text-muted-foreground' },
   pago: { label: 'Pago', icon: DollarSign, className: 'bg-warning text-warning-foreground' },
   confirmado: { label: 'Confirmado', icon: Check, className: 'bg-success text-success-foreground' },
 };
 
-export function PlayerList({ registrations, babaId, isAdmin }: PlayerListProps) {
-  const { getUserById, updateRegistrationStatus } = useApp();
-
+export function PlayerList({ registrations, isAdmin, onStatusChange }: PlayerListProps) {
   const linhaPlayers = registrations.filter((r) => r.position === 'linha');
   const goleiros = registrations.filter((r) => r.position === 'goleiro');
 
-  const handleStatusChange = (oderId: string, currentStatus: RegistrationStatus) => {
-    const nextStatus: Record<RegistrationStatus, RegistrationStatus> = {
+  const handleStatusChange = (userId: string, currentStatus: 'inscrito' | 'pago' | 'confirmado') => {
+    const nextStatus: Record<string, 'inscrito' | 'pago' | 'confirmado'> = {
       inscrito: 'pago',
       pago: 'confirmado',
       confirmado: 'inscrito',
     };
-    updateRegistrationStatus(babaId, oderId, nextStatus[currentStatus]);
+    onStatusChange?.(userId, nextStatus[currentStatus]);
   };
 
   const renderPlayer = (reg: Registration, index: number) => {
-    const user = getUserById(reg.oderId);
-    if (!user) return null;
+    const profile = reg.profiles;
+    if (!profile) return null;
 
     const status = statusConfig[reg.status];
     const StatusIcon = status.icon;
@@ -47,13 +44,13 @@ export function PlayerList({ registrations, babaId, isAdmin }: PlayerListProps) 
         <div className="flex items-center gap-3">
           <span className="text-sm font-bold text-muted-foreground w-6">{index + 1}</span>
           <Avatar className="h-10 w-10 border-2 border-primary/20">
-            <AvatarImage src={user.avatar} />
+            <AvatarImage src={profile.avatar_url || undefined} />
             <AvatarFallback className="bg-secondary text-secondary-foreground text-sm font-semibold">
-              {user.firstName[0]}{user.lastName[0]}
+              {profile.first_name[0]}{profile.last_name[0]}
             </AvatarFallback>
           </Avatar>
           <div>
-            <p className="font-medium text-foreground">{user.firstName} {user.lastName}</p>
+            <p className="font-medium text-foreground">{profile.first_name} {profile.last_name}</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -65,7 +62,7 @@ export function PlayerList({ registrations, babaId, isAdmin }: PlayerListProps) 
             <Button
               size="sm"
               variant="outline"
-              onClick={() => handleStatusChange(reg.oderId, reg.status)}
+              onClick={() => handleStatusChange(reg.user_id, reg.status)}
             >
               Alterar
             </Button>

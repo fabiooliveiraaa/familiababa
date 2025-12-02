@@ -1,13 +1,65 @@
-import { useApp } from '@/contexts/AppContext';
+import { useEffect, useState } from 'react';
 import { Header } from '@/components/Header';
 import { BabaCard } from '@/components/BabaCard';
-import { Calendar } from 'lucide-react';
+import { Calendar, Loader2 } from 'lucide-react';
+import { useBabas } from '@/hooks/useBabas';
+import { useAuthContext } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+
+interface BabaCounts {
+  [babaId: string]: { linha: number; goleiro: number };
+}
 
 export default function BabaList() {
-  const { babas, currentUser } = useApp();
+  const { babas, loading } = useBabas();
+  const { profile } = useAuthContext();
+  const [counts, setCounts] = useState<BabaCounts>({});
 
-  const openBabas = babas.filter((b) => b.isOpen);
-  const closedBabas = babas.filter((b) => !b.isOpen);
+  useEffect(() => {
+    const fetchCounts = async () => {
+      const { data } = await supabase
+        .from('registrations')
+        .select('baba_id, position');
+      
+      if (data) {
+        const newCounts: BabaCounts = {};
+        data.forEach((reg) => {
+          if (!newCounts[reg.baba_id]) {
+            newCounts[reg.baba_id] = { linha: 0, goleiro: 0 };
+          }
+          newCounts[reg.baba_id][reg.position]++;
+        });
+        setCounts(newCounts);
+      }
+    };
+
+    fetchCounts();
+
+    const channel = supabase
+      .channel('all-registrations')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'registrations' }, () => {
+        fetchCounts();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  const openBabas = babas.filter((b) => b.is_open);
+  const closedBabas = babas.filter((b) => !b.is_open);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -19,7 +71,7 @@ export default function BabaList() {
           <div>
             <h1 className="text-2xl font-bold">Próximos Babas</h1>
             <p className="text-muted-foreground">
-              {currentUser ? `Olá, ${currentUser.firstName}! ` : ''}
+              {profile ? `Olá, ${profile.first_name}! ` : ''}
               Veja os babas disponíveis e inscreva-se.
             </p>
           </div>
@@ -33,7 +85,12 @@ export default function BabaList() {
             </h2>
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {openBabas.map((baba) => (
-                <BabaCard key={baba.id} baba={baba} />
+                <BabaCard 
+                  key={baba.id} 
+                  baba={baba}
+                  linhaCount={counts[baba.id]?.linha || 0}
+                  goleiroCount={counts[baba.id]?.goleiro || 0}
+                />
               ))}
             </div>
           </section>
@@ -46,7 +103,12 @@ export default function BabaList() {
             </h2>
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {closedBabas.map((baba) => (
-                <BabaCard key={baba.id} baba={baba} />
+                <BabaCard 
+                  key={baba.id} 
+                  baba={baba}
+                  linhaCount={counts[baba.id]?.linha || 0}
+                  goleiroCount={counts[baba.id]?.goleiro || 0}
+                />
               ))}
             </div>
           </section>
