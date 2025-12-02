@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Shuffle, Image, Loader2, Download, Users, Trophy, Share2 } from 'lucide-react';
+import { Shuffle, Image, Loader2, Download, Users, Trophy, Share2, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -12,10 +12,18 @@ import {
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Baba, Registration } from '@/hooks/useBabas';
+import { StarRating } from '@/components/StarRating';
 
 interface AdminAIToolsProps {
   baba: Baba;
   registrations: Registration[];
+}
+
+interface PlayerRating {
+  id: string;
+  nome: string;
+  posicao: string;
+  rating: number;
 }
 
 interface TeamDrawResult {
@@ -40,11 +48,40 @@ export function AdminAITools({ baba, registrations }: AdminAIToolsProps) {
   const [teamResult, setTeamResult] = useState<TeamDrawResult | null>(null);
   const [bannerUrl, setBannerUrl] = useState<string | null>(null);
   const [bannerType, setBannerType] = useState<'promotional' | 'teams' | 'bestPlayer'>('promotional');
+  
+  // Estado para ratings manuais dos jogadores
+  const [playerRatings, setPlayerRatings] = useState<PlayerRating[]>([]);
+  const [ratingsConfigured, setRatingsConfigured] = useState(false);
 
   const confirmedPlayers = registrations.filter(r => r.status === 'confirmado');
 
+  // Inicializar ratings quando abrir o dialog
+  const initializeRatings = () => {
+    const initialRatings = confirmedPlayers.map(r => {
+      const name = r.is_mensalista 
+        ? r.manual_name 
+        : `${r.profiles?.first_name || ''} ${r.profiles?.last_name || ''}`.trim();
+      
+      return {
+        id: r.id,
+        nome: name || 'Jogador',
+        posicao: r.position,
+        rating: 3, // Rating padrão
+      };
+    });
+    setPlayerRatings(initialRatings);
+    setRatingsConfigured(false);
+    setTeamResult(null);
+  };
+
+  const updatePlayerRating = (playerId: string, newRating: number) => {
+    setPlayerRatings(prev => 
+      prev.map(p => p.id === playerId ? { ...p, rating: newRating } : p)
+    );
+  };
+
   const handleTeamDraw = async () => {
-    if (confirmedPlayers.length < 4) {
+    if (playerRatings.length < 4) {
       toast({ title: 'Mínimo 4 jogadores confirmados necessários', variant: 'destructive' });
       return;
     }
@@ -53,44 +90,8 @@ export function AdminAITools({ baba, registrations }: AdminAIToolsProps) {
     setTeamResult(null);
 
     try {
-      // Fetch ratings for all players
-      const playerIds = confirmedPlayers
-        .filter(r => r.user_id)
-        .map(r => r.user_id!);
-
-      const { data: ratingsData } = await supabase
-        .from('player_ratings')
-        .select('rated_id, skill_rating')
-        .in('rated_id', playerIds);
-
-      // Calculate average rating per player
-      const ratingsMap = new Map<string, number[]>();
-      ratingsData?.forEach(r => {
-        const ratings = ratingsMap.get(r.rated_id) || [];
-        ratings.push(r.skill_rating);
-        ratingsMap.set(r.rated_id, ratings);
-      });
-
-      const playerData = confirmedPlayers.map(r => {
-        const ratings = ratingsMap.get(r.user_id || '') || [];
-        const avgRating = ratings.length > 0 
-          ? ratings.reduce((a, b) => a + b, 0) / ratings.length 
-          : null;
-        
-        const name = r.is_mensalista 
-          ? r.manual_name 
-          : `${r.profiles?.first_name || ''} ${r.profiles?.last_name || ''}`.trim();
-
-        return {
-          id: r.id,
-          nome: name || 'Jogador',
-          posicao: r.position,
-          rating: avgRating,
-        };
-      });
-
       const { data, error } = await supabase.functions.invoke('team-draw', {
-        body: { babaId: baba.id, playerData }
+        body: { babaId: baba.id, playerData: playerRatings }
       });
 
       if (error) throw error;
@@ -124,7 +125,6 @@ export function AdminAITools({ baba, registrations }: AdminAIToolsProps) {
         price: baba.price,
       };
 
-      // For best player, we could use the voting winner
       const playerInfo = type === 'bestPlayer' ? {
         name: 'Jogador Destaque'
       } : undefined;
@@ -162,12 +162,14 @@ export function AdminAITools({ baba, registrations }: AdminAIToolsProps) {
 
   const shareToWhatsApp = () => {
     if (bannerUrl) {
-      // For WhatsApp, we'd need to upload the image first
-      // For now, just copy the URL
       navigator.clipboard.writeText(bannerUrl);
       toast({ title: 'URL da imagem copiada!' });
     }
   };
+
+  // Separar goleiros e jogadores de linha
+  const goleiros = playerRatings.filter(p => p.posicao === 'goleiro');
+  const linhaPlayers = playerRatings.filter(p => p.posicao === 'linha');
 
   return (
     <div className="space-y-3">
@@ -176,14 +178,17 @@ export function AdminAITools({ baba, registrations }: AdminAIToolsProps) {
       </h4>
 
       {/* Team Draw Dialog */}
-      <Dialog open={teamDrawOpen} onOpenChange={setTeamDrawOpen}>
+      <Dialog open={teamDrawOpen} onOpenChange={(open) => {
+        setTeamDrawOpen(open);
+        if (open) initializeRatings();
+      }}>
         <DialogTrigger asChild>
           <Button variant="outline" className="w-full justify-start">
             <Shuffle className="h-4 w-4 mr-2" />
             Sortear Times (IA)
           </Button>
         </DialogTrigger>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Shuffle className="h-5 w-5" />
@@ -192,32 +197,110 @@ export function AdminAITools({ baba, registrations }: AdminAIToolsProps) {
           </DialogHeader>
           
           <div className="space-y-4 pt-4">
-            <p className="text-sm text-muted-foreground">
-              A IA vai dividir os {confirmedPlayers.length} jogadores confirmados em 2 times equilibrados,
-              considerando as avaliações de cada jogador.
-            </p>
+            {confirmedPlayers.length < 4 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>Mínimo 4 jogadores confirmados necessários</p>
+                <p className="text-sm">Atualmente: {confirmedPlayers.length} confirmados</p>
+              </div>
+            ) : !ratingsConfigured && !teamResult ? (
+              <>
+                <p className="text-sm text-muted-foreground">
+                  Dê estrelas para cada jogador confirmado. A IA usará esses níveis para criar times equilibrados.
+                </p>
 
-            {!teamResult && (
-              <Button 
-                onClick={handleTeamDraw} 
-                disabled={loadingDraw || confirmedPlayers.length < 4}
-                className="w-full"
-              >
-                {loadingDraw ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Sorteando times...
-                  </>
-                ) : (
-                  <>
-                    <Shuffle className="h-4 w-4 mr-2" />
-                    Sortear Times
-                  </>
+                {/* Jogadores de Linha */}
+                <div className="space-y-2">
+                  <h5 className="font-medium text-sm flex items-center gap-2">
+                    <Users className="h-4 w-4" />
+                    Jogadores de Linha ({linhaPlayers.length})
+                  </h5>
+                  <div className="space-y-2 max-h-48 overflow-y-auto">
+                    {linhaPlayers.map((player) => (
+                      <div 
+                        key={player.id} 
+                        className="flex items-center justify-between p-2 bg-muted rounded-lg"
+                      >
+                        <span className="text-sm font-medium truncate flex-1 mr-2">
+                          {player.nome}
+                        </span>
+                        <StarRating
+                          rating={player.rating}
+                          interactive
+                          size="sm"
+                          onRatingChange={(rating) => updatePlayerRating(player.id, rating)}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Goleiros */}
+                {goleiros.length > 0 && (
+                  <div className="space-y-2">
+                    <h5 className="font-medium text-sm flex items-center gap-2">
+                      🧤 Goleiros ({goleiros.length})
+                    </h5>
+                    <div className="space-y-2">
+                      {goleiros.map((player) => (
+                        <div 
+                          key={player.id} 
+                          className="flex items-center justify-between p-2 bg-muted rounded-lg"
+                        >
+                          <span className="text-sm font-medium truncate flex-1 mr-2">
+                            {player.nome}
+                          </span>
+                          <StarRating
+                            rating={player.rating}
+                            interactive
+                            size="sm"
+                            onRatingChange={(rating) => updatePlayerRating(player.id, rating)}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 )}
-              </Button>
-            )}
 
-            {teamResult && (
+                <Button 
+                  onClick={() => setRatingsConfigured(true)}
+                  className="w-full"
+                >
+                  <Star className="h-4 w-4 mr-2" />
+                  Confirmar Níveis e Sortear
+                </Button>
+              </>
+            ) : ratingsConfigured && !teamResult ? (
+              <div className="space-y-4">
+                <p className="text-sm text-muted-foreground text-center">
+                  Níveis configurados! Clique para gerar os times equilibrados.
+                </p>
+                <Button 
+                  onClick={handleTeamDraw} 
+                  disabled={loadingDraw}
+                  className="w-full"
+                >
+                  {loadingDraw ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Sorteando times...
+                    </>
+                  ) : (
+                    <>
+                      <Shuffle className="h-4 w-4 mr-2" />
+                      Sortear Times com IA
+                    </>
+                  )}
+                </Button>
+                <Button 
+                  variant="outline"
+                  onClick={() => setRatingsConfigured(false)}
+                  className="w-full"
+                >
+                  Voltar e Editar Níveis
+                </Button>
+              </div>
+            ) : teamResult && (
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   {/* Time A */}
@@ -239,7 +322,7 @@ export function AdminAITools({ baba, registrations }: AdminAIToolsProps) {
                               {j.posicao === 'goleiro' && ' 🧤'}
                             </span>
                             <span className="text-muted-foreground text-xs">
-                              {j.rating?.toFixed(1) || '-'}
+                              ⭐{j.rating}
                             </span>
                           </li>
                         ))}
@@ -266,7 +349,7 @@ export function AdminAITools({ baba, registrations }: AdminAIToolsProps) {
                               {j.posicao === 'goleiro' && ' 🧤'}
                             </span>
                             <span className="text-muted-foreground text-xs">
-                              {j.rating?.toFixed(1) || '-'}
+                              ⭐{j.rating}
                             </span>
                           </li>
                         ))}
@@ -281,14 +364,27 @@ export function AdminAITools({ baba, registrations }: AdminAIToolsProps) {
                   </p>
                 </div>
 
-                <Button 
-                  variant="outline" 
-                  onClick={() => setTeamResult(null)}
-                  className="w-full"
-                >
-                  <Shuffle className="h-4 w-4 mr-2" />
-                  Sortear Novamente
-                </Button>
+                <div className="flex gap-2">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => {
+                      setTeamResult(null);
+                      setRatingsConfigured(false);
+                    }}
+                    className="flex-1"
+                  >
+                    Editar Níveis
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={handleTeamDraw}
+                    disabled={loadingDraw}
+                    className="flex-1"
+                  >
+                    <Shuffle className="h-4 w-4 mr-2" />
+                    Sortear Novamente
+                  </Button>
+                </div>
               </div>
             )}
           </div>
