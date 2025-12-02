@@ -295,6 +295,8 @@ export function useBabaRegistrations(babaId: string) {
       return false;
     }
     
+    // Force refresh the list
+    await fetchRegistrations();
     toast({ title: 'Jogador removido da lista!' });
     return true;
   };
