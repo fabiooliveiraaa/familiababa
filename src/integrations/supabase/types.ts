@@ -14,6 +14,38 @@ export type Database = {
   }
   public: {
     Tables: {
+      baba_votes: {
+        Row: {
+          baba_id: string
+          created_at: string
+          id: string
+          voted_for_id: string
+          voter_id: string
+        }
+        Insert: {
+          baba_id: string
+          created_at?: string
+          id?: string
+          voted_for_id: string
+          voter_id: string
+        }
+        Update: {
+          baba_id?: string
+          created_at?: string
+          id?: string
+          voted_for_id?: string
+          voter_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "baba_votes_baba_id_fkey"
+            columns: ["baba_id"]
+            isOneToOne: false
+            referencedRelation: "babas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       babas: {
         Row: {
           created_at: string

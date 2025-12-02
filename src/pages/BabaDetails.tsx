@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Header } from '@/components/Header';
 import { PlayerList } from '@/components/PlayerList';
+import { BabaVoting } from '@/components/BabaVoting';
 import { useBabas, useBabaRegistrations } from '@/hooks/useBabas';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { format, parseISO } from 'date-fns';
@@ -417,6 +418,18 @@ export default function BabaDetails() {
               />
             </CardContent>
           </Card>
+
+          {/* Voting Section - Only show when baba is closed */}
+          {!baba.is_open && (
+            <div className="lg:col-span-3">
+              <BabaVoting 
+                babaId={baba.id}
+                registrations={registrations}
+                userId={user?.id}
+                isParticipant={registrations.some(r => r.user_id === user?.id && r.status === 'confirmado')}
+              />
+            </div>
+          )}
         </div>
       </main>
     </div>
