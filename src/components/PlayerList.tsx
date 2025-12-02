@@ -1,13 +1,25 @@
-import { Check, Clock, DollarSign, User as UserIcon, FileText, ExternalLink } from 'lucide-react';
+import { Check, Clock, DollarSign, User as UserIcon, FileText, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Registration } from '@/hooks/useBabas';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 interface PlayerListProps {
   registrations: Registration[];
   isAdmin?: boolean;
   onStatusChange?: (userId: string, currentStatus: 'inscrito' | 'pago' | 'confirmado') => void;
+  onRemovePlayer?: (userId: string) => void;
 }
 
 const statusConfig = {
@@ -16,8 +28,7 @@ const statusConfig = {
   confirmado: { label: 'Confirmado', icon: Check, className: 'bg-success text-success-foreground' },
 };
 
-export function PlayerList({ registrations, isAdmin, onStatusChange }: PlayerListProps) {
-  // Separate confirmed and pending players
+export function PlayerList({ registrations, isAdmin, onStatusChange, onRemovePlayer }: PlayerListProps) {
   const linhaConfirmed = registrations.filter((r) => r.position === 'linha' && r.status === 'confirmado');
   const linhaPending = registrations.filter((r) => r.position === 'linha' && r.status !== 'confirmado');
   const goleiros = registrations.filter((r) => r.position === 'goleiro');
@@ -75,13 +86,36 @@ export function PlayerList({ registrations, isAdmin, onStatusChange }: PlayerLis
             </Button>
           )}
           {isAdmin && (
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => handleStatusChange(reg.user_id, reg.status)}
-            >
-              Alterar
-            </Button>
+            <>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => handleStatusChange(reg.user_id, reg.status)}
+              >
+                Alterar
+              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button size="sm" variant="destructive">
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Remover jogador?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Tem certeza que deseja remover {profile.first_name} {profile.last_name} da lista?
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => onRemovePlayer?.(reg.user_id)}>
+                      Remover
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </>
           )}
         </div>
       </div>
@@ -90,7 +124,7 @@ export function PlayerList({ registrations, isAdmin, onStatusChange }: PlayerLis
 
   return (
     <div className="space-y-6">
-      {/* Confirmed Linha Players - Main List */}
+      {/* Confirmed Linha Players */}
       <div>
         <div className="flex items-center gap-2 mb-4">
           <UserIcon className="h-5 w-5 text-success" />
@@ -120,7 +154,7 @@ export function PlayerList({ registrations, isAdmin, onStatusChange }: PlayerLis
         </div>
       </div>
 
-      {/* Pending Linha Players - Admin Only or visible count */}
+      {/* Pending Linha Players */}
       {(isAdmin || linhaPending.length > 0) && (
         <div className="border-t pt-6">
           <div className="flex items-center gap-2 mb-4">
