@@ -35,7 +35,7 @@ export function BabaCard({ baba, linhaCount, goleiroCount }: BabaCardProps) {
         </div>
         <div className="flex items-center gap-2 text-muted-foreground">
           <Clock className="h-4 w-4 text-primary" />
-          <span className="text-sm">{baba.time}</span>
+          <span className="text-sm">{baba.start_time} - {baba.end_time}</span>
         </div>
         <div className="flex items-center gap-2 text-muted-foreground">
           <MapPin className="h-4 w-4 text-primary" />

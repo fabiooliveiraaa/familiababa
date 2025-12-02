@@ -19,13 +19,14 @@ export type Database = {
           created_at: string
           created_by: string
           date: string
+          end_time: string
           id: string
           is_open: boolean
           location: string
           max_goleiros: number
           max_linha_players: number
           price: number
-          time: string
+          start_time: string
           title: string
           updated_at: string
         }
@@ -33,13 +34,14 @@ export type Database = {
           created_at?: string
           created_by: string
           date: string
+          end_time?: string
           id?: string
           is_open?: boolean
           location: string
           max_goleiros?: number
           max_linha_players?: number
           price: number
-          time: string
+          start_time: string
           title: string
           updated_at?: string
         }
@@ -47,13 +49,14 @@ export type Database = {
           created_at?: string
           created_by?: string
           date?: string
+          end_time?: string
           id?: string
           is_open?: boolean
           location?: string
           max_goleiros?: number
           max_linha_players?: number
           price?: number
-          time?: string
+          start_time?: string
           title?: string
           updated_at?: string
         }
