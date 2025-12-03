@@ -206,55 +206,55 @@ export default function BabaDetails() {
     <div className="min-h-screen bg-background">
       <Header />
 
-      <main className="container mx-auto px-4 py-6">
-        <Button variant="ghost" onClick={() => navigate('/')} className="mb-4">
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Voltar
+      <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6">
+        <Button variant="ghost" onClick={() => navigate('/')} className="mb-3 sm:mb-4 -ml-2 h-9">
+          <ArrowLeft className="h-4 w-4 mr-1 sm:mr-2" />
+          <span className="text-sm">Voltar</span>
         </Button>
 
-        <div className="grid gap-6 lg:grid-cols-3">
+        <div className="grid gap-4 sm:gap-6 lg:grid-cols-3">
           {/* Info Card */}
           <Card className="lg:col-span-1 border-2">
-            <CardHeader className="bg-secondary">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-secondary-foreground">{baba.title}</CardTitle>
-                <Badge variant={baba.is_open ? 'default' : 'secondary'} className={baba.is_open ? 'bg-success' : ''}>
+            <CardHeader className="bg-secondary p-3 sm:p-6">
+              <div className="flex items-center justify-between gap-2">
+                <CardTitle className="text-secondary-foreground text-base sm:text-xl truncate">{baba.title}</CardTitle>
+                <Badge variant={baba.is_open ? 'default' : 'secondary'} className={`shrink-0 ${baba.is_open ? 'bg-success' : ''}`}>
                   {baba.is_open ? 'Aberto' : 'Fechado'}
                 </Badge>
               </div>
             </CardHeader>
-            <CardContent className="pt-6 space-y-4">
-              <div className="flex items-center gap-3">
-                <Calendar className="h-5 w-5 text-primary" />
-                <span className="font-medium">
-                  {format(parseISO(baba.date), "EEEE, dd 'de' MMMM", { locale: ptBR })}
+            <CardContent className="p-3 sm:p-6 pt-4 sm:pt-6 space-y-3 sm:space-y-4">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-primary shrink-0" />
+                <span className="text-sm sm:text-base font-medium truncate">
+                  {format(parseISO(baba.date), "EEE, dd 'de' MMM", { locale: ptBR })}
                 </span>
               </div>
-              <div className="flex items-center gap-3">
-                <Clock className="h-5 w-5 text-primary" />
-                <span>{baba.start_time} - {baba.end_time}</span>
+              <div className="flex items-center gap-2 sm:gap-3">
+                <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-primary shrink-0" />
+                <span className="text-sm sm:text-base">{baba.start_time} - {baba.end_time}</span>
               </div>
-              <div className="flex items-center gap-3">
-                <MapPin className="h-5 w-5 text-primary" />
-                <span>{baba.location}</span>
+              <div className="flex items-center gap-2 sm:gap-3">
+                <MapPin className="h-4 w-4 sm:h-5 sm:w-5 text-primary shrink-0" />
+                <span className="text-sm sm:text-base truncate">{baba.location}</span>
               </div>
-              <div className="flex items-center gap-3">
-                <DollarSign className="h-5 w-5 text-primary" />
-                <span className="font-bold text-lg">R$ {Number(baba.price).toFixed(2)}</span>
+              <div className="flex items-center gap-2 sm:gap-3">
+                <DollarSign className="h-4 w-4 sm:h-5 sm:w-5 text-primary shrink-0" />
+                <span className="font-bold text-base sm:text-lg">R$ {Number(baba.price).toFixed(2)}</span>
               </div>
 
               {/* PIX Key Section */}
               {baba.pix_key && (
-                <div className="border-t pt-4">
-                  <h4 className="font-semibold mb-2 flex items-center gap-2">
+                <div className="border-t pt-3 sm:pt-4">
+                  <h4 className="font-semibold mb-2 flex items-center gap-2 text-sm sm:text-base">
                     <DollarSign className="h-4 w-4" />
                     Pagamento via PIX
                   </h4>
-                  <div className="bg-muted p-3 rounded-lg">
-                    <p className="text-sm text-muted-foreground mb-2">Chave PIX:</p>
+                  <div className="bg-muted p-2 sm:p-3 rounded-lg">
+                    <p className="text-xs sm:text-sm text-muted-foreground mb-2">Chave PIX:</p>
                     <div className="flex items-center gap-2">
-                      <code className="flex-1 text-sm bg-background p-2 rounded truncate">{baba.pix_key}</code>
-                      <Button size="sm" variant="outline" onClick={handleCopyPix}>
+                      <code className="flex-1 text-xs sm:text-sm bg-background p-2 rounded truncate">{baba.pix_key}</code>
+                      <Button size="sm" variant="outline" onClick={handleCopyPix} className="h-8 px-2 sm:px-3 shrink-0">
                         {copied ? <CheckCircle className="h-4 w-4 text-success" /> : <Copy className="h-4 w-4" />}
                       </Button>
                     </div>
@@ -262,63 +262,63 @@ export default function BabaDetails() {
                 </div>
               )}
 
-              <div className="border-t pt-4 space-y-3">
-                <h4 className="font-semibold flex items-center gap-2">
+              <div className="border-t pt-3 sm:pt-4 space-y-2 sm:space-y-3">
+                <h4 className="font-semibold flex items-center gap-2 text-sm sm:text-base">
                   <Users className="h-4 w-4" />
                   Vagas
                 </h4>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-muted p-3 rounded-lg text-center">
-                    <p className="text-2xl font-bold text-foreground">{linhaCount}/{baba.max_linha_players}</p>
+                <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                  <div className="bg-muted p-2 sm:p-3 rounded-lg text-center">
+                    <p className="text-xl sm:text-2xl font-bold text-foreground">{linhaCount}/{baba.max_linha_players}</p>
                     <p className="text-xs text-muted-foreground">Linha</p>
                   </div>
-                  <div className="bg-muted p-3 rounded-lg text-center">
-                    <p className="text-2xl font-bold text-foreground">{goleiroCount}/{baba.max_goleiros}</p>
+                  <div className="bg-muted p-2 sm:p-3 rounded-lg text-center">
+                    <p className="text-xl sm:text-2xl font-bold text-foreground">{goleiroCount}/{baba.max_goleiros}</p>
                     <p className="text-xs text-muted-foreground">Goleiros</p>
                   </div>
                 </div>
               </div>
 
-              <div className="border-t pt-4 space-y-3">
-                <h4 className="font-semibold">Confirmados</h4>
-                <div className="bg-success/20 p-3 rounded-lg text-center">
-                  <p className="text-2xl font-bold text-success">{confirmedCount}</p>
+              <div className="border-t pt-3 sm:pt-4 space-y-2 sm:space-y-3">
+                <h4 className="font-semibold text-sm sm:text-base">Confirmados</h4>
+                <div className="bg-success/20 p-2 sm:p-3 rounded-lg text-center">
+                  <p className="text-xl sm:text-2xl font-bold text-success">{confirmedCount}</p>
                   <p className="text-xs text-muted-foreground">Participantes confirmados</p>
                 </div>
               </div>
 
               {user && !isAdmin && (
-                <div className="border-t pt-4 space-y-3">
+                <div className="border-t pt-3 sm:pt-4 space-y-2 sm:space-y-3">
                   {isUserRegistered ? (
-                    <div className="bg-success/20 p-4 rounded-lg text-center">
-                      <p className="font-semibold text-success">✓ Você está inscrito!</p>
+                    <div className="bg-success/20 p-3 sm:p-4 rounded-lg text-center">
+                      <p className="font-semibold text-success text-sm sm:text-base">✓ Você está inscrito!</p>
                     </div>
                   ) : baba.is_open ? (
                     <>
                       <Select value={selectedPosition} onValueChange={(v) => setSelectedPosition(v as 'linha' | 'goleiro')}>
-                        <SelectTrigger>
+                        <SelectTrigger className="h-10 text-sm">
                           <SelectValue placeholder="Posição" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="linha">
-                            Jogador de Linha {isLinhaFull && '(Lista de Espera)'}
+                            Linha {isLinhaFull && '(Espera)'}
                           </SelectItem>
                           <SelectItem value="goleiro" disabled={isGoleiroFull}>
-                            Goleiro (não paga) {isGoleiroFull && '(Cheio)'}
+                            Goleiro {isGoleiroFull && '(Cheio)'}
                           </SelectItem>
                         </SelectContent>
                       </Select>
 
                       {selectedPosition === 'linha' && isLinhaFull && (
-                        <p className="text-sm text-warning bg-warning/10 p-2 rounded">
-                          ⚠️ As vagas estão cheias. Você será adicionado à lista de espera.
+                        <p className="text-xs sm:text-sm text-warning bg-warning/10 p-2 rounded">
+                          ⚠️ Vagas cheias. Lista de espera.
                         </p>
                       )}
 
                       {selectedPosition === 'linha' && (
                         <div className="space-y-2">
-                          <p className="text-sm text-muted-foreground">
-                            Anexe o comprovante de pagamento PIX:
+                          <p className="text-xs sm:text-sm text-muted-foreground">
+                            Anexe o comprovante PIX:
                           </p>
                           <input
                             type="file"
@@ -330,11 +330,11 @@ export default function BabaDetails() {
                           <Button
                             type="button"
                             variant="outline"
-                            className="w-full"
+                            className="w-full h-9 sm:h-10 text-sm"
                             onClick={() => fileInputRef.current?.click()}
                           >
-                            <Upload className="h-4 w-4 mr-2" />
-                            {paymentProofFile ? paymentProofFile.name : 'Selecionar comprovante'}
+                            <Upload className="h-4 w-4 mr-2 shrink-0" />
+                            <span className="truncate">{paymentProofFile ? paymentProofFile.name : 'Selecionar comprovante'}</span>
                           </Button>
                           {paymentProofFile && (
                             <p className="text-xs text-success">✓ Comprovante selecionado</p>
@@ -343,13 +343,13 @@ export default function BabaDetails() {
                       )}
 
                       {selectedPosition === 'goleiro' && (
-                        <p className="text-sm text-muted-foreground bg-muted p-2 rounded">
-                          Goleiros não precisam pagar e são confirmados automaticamente.
+                        <p className="text-xs sm:text-sm text-muted-foreground bg-muted p-2 rounded">
+                          Goleiros não pagam e são confirmados automaticamente.
                         </p>
                       )}
 
                       <Button 
-                        className="w-full btn-glow" 
+                        className="w-full btn-glow h-10 text-sm sm:text-base" 
                         onClick={handleRegister} 
                         disabled={!canRegister() || uploading}
                       >
@@ -359,58 +359,58 @@ export default function BabaDetails() {
                             Enviando...
                           </>
                         ) : isLinhaFull && selectedPosition === 'linha' ? (
-                          'Entrar na Lista de Espera'
+                          'Lista de Espera'
                         ) : (
                           'Inscrever-se'
                         )}
                       </Button>
                     </>
                   ) : (
-                    <div className="bg-muted p-4 rounded-lg text-center">
-                      <Lock className="h-6 w-6 mx-auto mb-2 text-muted-foreground" />
-                      <p className="text-muted-foreground">Inscrições fechadas</p>
+                    <div className="bg-muted p-3 sm:p-4 rounded-lg text-center">
+                      <Lock className="h-5 w-5 sm:h-6 sm:w-6 mx-auto mb-2 text-muted-foreground" />
+                      <p className="text-muted-foreground text-sm">Inscrições fechadas</p>
                     </div>
                   )}
                 </div>
               )}
 
               {!user && (
-                <div className="border-t pt-4">
-                  <Button className="w-full" onClick={() => navigate('/auth')}>
+                <div className="border-t pt-3 sm:pt-4">
+                  <Button className="w-full h-10 text-sm sm:text-base" onClick={() => navigate('/auth')}>
                     Entrar para se inscrever
                   </Button>
                 </div>
               )}
 
               {isAdmin && (
-                <div className="border-t pt-4 space-y-3">
+                <div className="border-t pt-3 sm:pt-4 space-y-2 sm:space-y-3">
                   <Dialog open={mensalistaDialogOpen} onOpenChange={setMensalistaDialogOpen}>
                     <DialogTrigger asChild>
-                      <Button variant="secondary" className="w-full">
-                        <UserPlus className="h-4 w-4 mr-2" /> Inserir Mensalista
+                      <Button variant="secondary" className="w-full h-9 sm:h-10 text-sm">
+                        <UserPlus className="h-4 w-4 mr-2" /> Mensalista
                       </Button>
                     </DialogTrigger>
-                    <DialogContent>
+                    <DialogContent className="max-w-[90vw] sm:max-w-md">
                       <DialogHeader>
                         <DialogTitle>Adicionar Mensalista 👑</DialogTitle>
                       </DialogHeader>
                       <div className="space-y-4 pt-4">
-                        <p className="text-sm text-muted-foreground">
-                          Mensalistas são adicionados diretamente como confirmados na lista principal.
+                        <p className="text-xs sm:text-sm text-muted-foreground">
+                          Mensalistas são adicionados diretamente como confirmados.
                         </p>
                         <input
                           type="text"
-                          placeholder="Digite o nome do mensalista"
+                          placeholder="Nome do mensalista"
                           value={mensalistaName}
                           onChange={(e) => setMensalistaName(e.target.value)}
-                          className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                          className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring text-sm"
                         />
                         <Button 
                           className="w-full" 
                           onClick={handleAddMensalista}
                           disabled={!mensalistaName.trim()}
                         >
-                          Adicionar Mensalista
+                          Adicionar
                         </Button>
                       </div>
                     </DialogContent>
@@ -418,26 +418,26 @@ export default function BabaDetails() {
 
                   <Button
                     variant={baba.is_open ? 'destructive' : 'default'}
-                    className="w-full"
+                    className="w-full h-9 sm:h-10 text-sm"
                     onClick={() => toggleBabaOpen(baba.id, baba.is_open)}
                   >
                     {baba.is_open ? (
                       <>
-                        <Lock className="h-4 w-4 mr-2" /> Fechar Inscrições
+                        <Lock className="h-4 w-4 mr-2" /> Fechar
                       </>
                     ) : (
                       <>
-                        <Unlock className="h-4 w-4 mr-2" /> Abrir Inscrições
+                        <Unlock className="h-4 w-4 mr-2" /> Abrir
                       </>
                     )}
                   </Button>
 
                   <Button
                     variant="outline"
-                    className="w-full"
+                    className="w-full h-9 sm:h-10 text-sm"
                     onClick={handleExportList}
                   >
-                    <Download className="h-4 w-4 mr-2" /> Exportar Lista
+                    <Download className="h-4 w-4 mr-2" /> Exportar
                   </Button>
 
                   <div className="border-t pt-3 mt-3">
@@ -447,20 +447,20 @@ export default function BabaDetails() {
                   {!baba.is_open && (
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
-                        <Button variant="destructive" className="w-full">
-                          <Trash2 className="h-4 w-4 mr-2" /> Excluir Baba
+                        <Button variant="destructive" className="w-full h-9 sm:h-10 text-sm">
+                          <Trash2 className="h-4 w-4 mr-2" /> Excluir
                         </Button>
                       </AlertDialogTrigger>
-                      <AlertDialogContent>
+                      <AlertDialogContent className="max-w-[90vw] sm:max-w-md">
                         <AlertDialogHeader>
                           <AlertDialogTitle>Excluir Baba?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Esta ação não pode ser desfeita. Todas as inscrições serão removidas permanentemente.
+                          <AlertDialogDescription className="text-sm">
+                            Esta ação não pode ser desfeita. Todas as inscrições serão removidas.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                          <AlertDialogAction onClick={handleDeleteBaba}>
+                        <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+                          <AlertDialogCancel className="w-full sm:w-auto">Cancelar</AlertDialogCancel>
+                          <AlertDialogAction onClick={handleDeleteBaba} className="w-full sm:w-auto">
                             Excluir
                           </AlertDialogAction>
                         </AlertDialogFooter>
@@ -474,10 +474,10 @@ export default function BabaDetails() {
 
           {/* Players List */}
           <Card className="lg:col-span-2 border-2">
-            <CardHeader>
-              <CardTitle>Lista de Jogadores</CardTitle>
+            <CardHeader className="p-3 sm:p-6">
+              <CardTitle className="text-base sm:text-xl">Lista de Jogadores</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-3 sm:p-6 pt-0">
               <PlayerList 
                 registrations={registrations}
                 isAdmin={isAdmin}

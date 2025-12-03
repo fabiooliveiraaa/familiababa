@@ -66,28 +66,33 @@ export default function BabaList() {
     <div className="min-h-screen bg-background">
       <Header />
       
-      <main className="container mx-auto px-4 py-8">
-        <div className="flex flex-col lg:flex-row gap-8">
+      <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
+        {/* Mobile Ranking - shows first on mobile */}
+        <div className="lg:hidden mb-6">
+          <RankingWidget />
+        </div>
+
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
           {/* Main content */}
-          <div className="flex-1">
-            <div className="flex items-center gap-3 mb-8">
-              <Calendar className="h-8 w-8 text-primary" />
-              <div>
-                <h1 className="text-2xl font-bold">Próximos Babas</h1>
-                <p className="text-muted-foreground">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-3 mb-6 sm:mb-8">
+              <Calendar className="h-6 w-6 sm:h-8 sm:w-8 text-primary shrink-0" />
+              <div className="min-w-0">
+                <h1 className="text-xl sm:text-2xl font-bold">Próximos Babas</h1>
+                <p className="text-sm sm:text-base text-muted-foreground truncate">
                   {profile ? `Olá, ${profile.first_name}! ` : ''}
-                  Veja os babas disponíveis e inscreva-se.
+                  Veja os babas disponíveis.
                 </p>
               </div>
             </div>
 
             {openBabas.length > 0 && (
-              <section className="mb-10">
-                <h2 className="text-lg font-semibold mb-4 text-success flex items-center gap-2">
+              <section className="mb-8 sm:mb-10">
+                <h2 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-success flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-success animate-pulse"></span>
                   Inscrições Abertas
                 </h2>
-                <div className="grid gap-6 md:grid-cols-2">
+                <div className="grid gap-4 sm:gap-6 sm:grid-cols-2">
                   {openBabas.map((baba) => (
                     <BabaCard 
                       key={baba.id} 
@@ -102,10 +107,10 @@ export default function BabaList() {
 
             {closedBabas.length > 0 && (
               <section>
-                <h2 className="text-lg font-semibold mb-4 text-muted-foreground">
+                <h2 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-muted-foreground">
                   Inscrições Fechadas
                 </h2>
-                <div className="grid gap-6 md:grid-cols-2">
+                <div className="grid gap-4 sm:gap-6 sm:grid-cols-2">
                   {closedBabas.map((baba) => (
                     <BabaCard 
                       key={baba.id} 
@@ -119,19 +124,19 @@ export default function BabaList() {
             )}
 
             {babas.length === 0 && (
-              <div className="text-center py-20">
-                <Calendar className="h-16 w-16 text-muted-foreground mx-auto mb-4 opacity-50" />
-                <h2 className="text-xl font-semibold mb-2">Nenhum baba agendado</h2>
-                <p className="text-muted-foreground">
+              <div className="text-center py-12 sm:py-20">
+                <Calendar className="h-12 w-12 sm:h-16 sm:w-16 text-muted-foreground mx-auto mb-4 opacity-50" />
+                <h2 className="text-lg sm:text-xl font-semibold mb-2">Nenhum baba agendado</h2>
+                <p className="text-sm sm:text-base text-muted-foreground">
                   Aguarde o administrador criar novos babas.
                 </p>
               </div>
             )}
           </div>
 
-          {/* Sidebar with Ranking */}
-          <aside className="lg:w-80 shrink-0">
-            <div className="sticky top-4">
+          {/* Desktop Sidebar with Ranking */}
+          <aside className="hidden lg:block lg:w-80 shrink-0">
+            <div className="sticky top-20">
               <RankingWidget />
             </div>
           </aside>

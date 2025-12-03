@@ -50,26 +50,26 @@ export function BabaVoting({ babaId, registrations, userId, isParticipant }: Bab
 
   return (
     <Card className="border-2 border-warning/50">
-      <CardHeader className="bg-warning/10">
-        <CardTitle className="flex items-center gap-2 text-warning">
-          <Trophy className="h-5 w-5" />
+      <CardHeader className="bg-warning/10 p-3 sm:p-6">
+        <CardTitle className="flex items-center gap-2 text-warning text-base sm:text-lg">
+          <Trophy className="h-4 w-4 sm:h-5 sm:w-5" />
           Melhor do Baba
         </CardTitle>
       </CardHeader>
-      <CardContent className="pt-6 space-y-6">
+      <CardContent className="p-3 sm:p-6 pt-4 sm:pt-6 space-y-4 sm:space-y-6">
         {/* Ranking */}
         {ranking.length > 0 && (
           <div>
-            <h4 className="font-semibold mb-3 flex items-center gap-2">
+            <h4 className="font-semibold mb-2 sm:mb-3 flex items-center gap-2 text-sm sm:text-base">
               <Trophy className="h-4 w-4" />
               Ranking em Tempo Real
             </h4>
-            <div className="space-y-2">
+            <div className="space-y-1.5 sm:space-y-2">
               {ranking.map((player, index) => (
                 <div
                   key={player.user_id}
                   className={cn(
-                    "flex items-center justify-between p-3 rounded-lg transition-all",
+                    "flex items-center justify-between p-2 sm:p-3 rounded-lg transition-all",
                     index === 0 && "bg-warning/20 border border-warning/30",
                     index === 1 && "bg-muted/80",
                     index === 2 && "bg-muted/60",
@@ -77,25 +77,25 @@ export function BabaVoting({ babaId, registrations, userId, isParticipant }: Bab
                   )}
                 >
                   <div 
-                    className="flex items-center gap-3 cursor-pointer hover:opacity-80"
+                    className="flex items-center gap-2 sm:gap-3 cursor-pointer hover:opacity-80 min-w-0"
                     onClick={() => navigate(`/profile/${player.user_id}`)}
                   >
-                    <div className="w-8 flex justify-center">
+                    <div className="w-6 sm:w-8 flex justify-center shrink-0">
                       {getRankIcon(index)}
                     </div>
                     <Avatar className={cn(
-                      "h-10 w-10 border-2",
+                      "h-8 w-8 sm:h-10 sm:w-10 border-2 shrink-0",
                       index === 0 && "border-warning",
                       index !== 0 && "border-primary/20"
                     )}>
                       <AvatarImage src={player.profile?.avatar_url || undefined} />
-                      <AvatarFallback className="bg-secondary text-secondary-foreground text-sm">
+                      <AvatarFallback className="bg-secondary text-secondary-foreground text-xs sm:text-sm">
                         {player.profile?.first_name?.[0]}{player.profile?.last_name?.[0]}
                       </AvatarFallback>
                     </Avatar>
-                    <div>
+                    <div className="min-w-0">
                       <p className={cn(
-                        "font-medium hover:underline",
+                        "font-medium hover:underline text-sm sm:text-base truncate",
                         index === 0 && "text-warning font-bold"
                       )}>
                         {player.profile?.first_name} {player.profile?.last_name}
@@ -103,6 +103,7 @@ export function BabaVoting({ babaId, registrations, userId, isParticipant }: Bab
                     </div>
                   </div>
                   <Badge variant={index === 0 ? "default" : "secondary"} className={cn(
+                    "shrink-0 text-xs",
                     index === 0 && "bg-warning text-warning-foreground"
                   )}>
                     {player.vote_count} {player.vote_count === 1 ? 'voto' : 'votos'}
@@ -114,24 +115,24 @@ export function BabaVoting({ babaId, registrations, userId, isParticipant }: Bab
         )}
 
         {ranking.length === 0 && (
-          <p className="text-center text-muted-foreground py-4">
+          <p className="text-center text-muted-foreground py-3 sm:py-4 text-sm">
             Nenhum voto ainda. Seja o primeiro a votar!
           </p>
         )}
 
         {/* Voting Section */}
         {isParticipant && userId && (
-          <div className="border-t pt-4">
-            <h4 className="font-semibold mb-3 flex items-center gap-2">
+          <div className="border-t pt-3 sm:pt-4">
+            <h4 className="font-semibold mb-2 sm:mb-3 flex items-center gap-2 text-sm sm:text-base">
               <Vote className="h-4 w-4" />
-              {userVote ? 'Alterar seu voto' : 'Vote no melhor jogador'}
+              {userVote ? 'Alterar voto' : 'Vote no melhor'}
             </h4>
             {userVote && (
-              <p className="text-sm text-muted-foreground mb-3">
+              <p className="text-xs sm:text-sm text-muted-foreground mb-2 sm:mb-3">
                 Você votou em: {confirmedPlayers.find(p => p.user_id === userVote.voted_for_id)?.profiles?.first_name}
               </p>
             )}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 sm:gap-2">
               {confirmedPlayers
                 .filter(p => p.user_id !== userId) // Can't vote for yourself
                 .map(player => (
@@ -139,13 +140,13 @@ export function BabaVoting({ babaId, registrations, userId, isParticipant }: Bab
                     key={player.user_id}
                     variant={userVote?.voted_for_id === player.user_id ? "default" : "outline"}
                     className={cn(
-                      "h-auto py-2 px-3 flex items-center gap-2",
+                      "h-auto py-1.5 sm:py-2 px-2 sm:px-3 flex items-center gap-1.5 sm:gap-2",
                       userVote?.voted_for_id === player.user_id && "bg-warning text-warning-foreground hover:bg-warning/90"
                     )}
                     onClick={() => handleVote(player.user_id)}
                     disabled={voting}
                   >
-                    <Avatar className="h-6 w-6">
+                    <Avatar className="h-5 w-5 sm:h-6 sm:w-6 shrink-0">
                       <AvatarImage src={player.profiles?.avatar_url || undefined} />
                       <AvatarFallback className="text-xs">
                         {player.profiles?.first_name?.[0]}{player.profiles?.last_name?.[0]}
@@ -161,13 +162,13 @@ export function BabaVoting({ babaId, registrations, userId, isParticipant }: Bab
         )}
 
         {!isParticipant && userId && (
-          <p className="text-sm text-muted-foreground text-center py-2">
+          <p className="text-xs sm:text-sm text-muted-foreground text-center py-2">
             Apenas participantes confirmados podem votar
           </p>
         )}
 
         {!userId && (
-          <p className="text-sm text-muted-foreground text-center py-2">
+          <p className="text-xs sm:text-sm text-muted-foreground text-center py-2">
             Faça login para votar no melhor jogador
           </p>
         )}
