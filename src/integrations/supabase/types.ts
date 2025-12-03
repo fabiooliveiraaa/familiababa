@@ -194,6 +194,7 @@ export type Database = {
         Row: {
           baba_id: string
           id: string
+          is_champion: boolean
           is_mensalista: boolean
           manual_name: string | null
           payment_proof_url: string | null
@@ -206,6 +207,7 @@ export type Database = {
         Insert: {
           baba_id: string
           id?: string
+          is_champion?: boolean
           is_mensalista?: boolean
           manual_name?: string | null
           payment_proof_url?: string | null
@@ -218,6 +220,7 @@ export type Database = {
         Update: {
           baba_id?: string
           id?: string
+          is_champion?: boolean
           is_mensalista?: boolean
           manual_name?: string | null
           payment_proof_url?: string | null
@@ -274,40 +277,6 @@ export type Database = {
           total_votes_received: number | null
           user_id: string | null
           worst_player_count: number | null
-        }
-        Insert: {
-          avatar_url?: string | null
-          avg_rating?: never
-          best_goalkeeper_titles?: never
-          champion_wins?: never
-          craque_titles?: never
-          first_name?: string | null
-          last_name?: string | null
-          matches_as_goleiro?: never
-          matches_as_linha?: never
-          ranking_score?: never
-          total_matches?: never
-          total_ratings?: never
-          total_votes_received?: never
-          user_id?: string | null
-          worst_player_count?: never
-        }
-        Update: {
-          avatar_url?: string | null
-          avg_rating?: never
-          best_goalkeeper_titles?: never
-          champion_wins?: never
-          craque_titles?: never
-          first_name?: string | null
-          last_name?: string | null
-          matches_as_goleiro?: never
-          matches_as_linha?: never
-          ranking_score?: never
-          total_matches?: never
-          total_ratings?: never
-          total_votes_received?: never
-          user_id?: string | null
-          worst_player_count?: never
         }
         Relationships: []
       }

@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Calendar, Clock, MapPin, DollarSign, Users, Lock, Unlock, Loader2, Upload, Copy, CheckCircle, Trash2, Download, UserPlus } from 'lucide-react';
+import { ChampionTeamSelector } from '@/components/ChampionTeamSelector';
 import { UserSearchSelect } from '@/components/UserSearchSelect';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -45,7 +46,7 @@ export default function BabaDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { babas, loading: babasLoading, toggleBabaOpen, deleteBaba } = useBabas();
-  const { registrations, loading: regsLoading, register, registerMensalista, promoteFromWaitingList, updateStatus, removeRegistration } = useBabaRegistrations(id || '');
+  const { registrations, loading: regsLoading, register, registerMensalista, promoteFromWaitingList, updateStatus, removeRegistration, refetch } = useBabaRegistrations(id || '');
   const { user, isAdmin } = useAuthContext();
   const [selectedPosition, setSelectedPosition] = useState<'linha' | 'goleiro'>('linha');
   const [uploading, setUploading] = useState(false);
@@ -445,6 +446,14 @@ export default function BabaDetails() {
                   >
                     <Download className="h-4 w-4 mr-2" /> Exportar
                   </Button>
+
+                  {!baba.is_open && (
+                    <ChampionTeamSelector 
+                      babaId={baba.id} 
+                      registrations={registrations} 
+                      onSaved={refetch}
+                    />
+                  )}
 
                   <div className="border-t pt-3 mt-3">
                     <AdminAITools baba={baba} registrations={registrations} />
