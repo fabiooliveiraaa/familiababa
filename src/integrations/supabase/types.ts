@@ -48,6 +48,9 @@ export type Database = {
       }
       babas: {
         Row: {
+          best_goalkeeper_id: string | null
+          best_player_id: string | null
+          champion_team: string | null
           created_at: string
           created_by: string
           date: string
@@ -62,8 +65,12 @@ export type Database = {
           start_time: string
           title: string
           updated_at: string
+          worst_player_id: string | null
         }
         Insert: {
+          best_goalkeeper_id?: string | null
+          best_player_id?: string | null
+          champion_team?: string | null
           created_at?: string
           created_by: string
           date: string
@@ -78,8 +85,12 @@ export type Database = {
           start_time: string
           title: string
           updated_at?: string
+          worst_player_id?: string | null
         }
         Update: {
+          best_goalkeeper_id?: string | null
+          best_player_id?: string | null
+          champion_team?: string | null
           created_at?: string
           created_by?: string
           date?: string
@@ -94,6 +105,7 @@ export type Database = {
           start_time?: string
           title?: string
           updated_at?: string
+          worst_player_id?: string | null
         }
         Relationships: []
       }
@@ -249,6 +261,8 @@ export type Database = {
         Row: {
           avatar_url: string | null
           avg_rating: number | null
+          best_goalkeeper_titles: number | null
+          champion_wins: number | null
           craque_titles: number | null
           first_name: string | null
           last_name: string | null
@@ -259,6 +273,41 @@ export type Database = {
           total_ratings: number | null
           total_votes_received: number | null
           user_id: string | null
+          worst_player_count: number | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          avg_rating?: never
+          best_goalkeeper_titles?: never
+          champion_wins?: never
+          craque_titles?: never
+          first_name?: string | null
+          last_name?: string | null
+          matches_as_goleiro?: never
+          matches_as_linha?: never
+          ranking_score?: never
+          total_matches?: never
+          total_ratings?: never
+          total_votes_received?: never
+          user_id?: string | null
+          worst_player_count?: never
+        }
+        Update: {
+          avatar_url?: string | null
+          avg_rating?: never
+          best_goalkeeper_titles?: never
+          champion_wins?: never
+          craque_titles?: never
+          first_name?: string | null
+          last_name?: string | null
+          matches_as_goleiro?: never
+          matches_as_linha?: never
+          ranking_score?: never
+          total_matches?: never
+          total_ratings?: never
+          total_votes_received?: never
+          user_id?: string | null
+          worst_player_count?: never
         }
         Relationships: []
       }
