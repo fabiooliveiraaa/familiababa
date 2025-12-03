@@ -97,6 +97,30 @@ export type Database = {
         }
         Relationships: []
       }
+      player_achievements: {
+        Row: {
+          achieved_at: string
+          achievement_type: string
+          id: string
+          metadata: Json | null
+          user_id: string
+        }
+        Insert: {
+          achieved_at?: string
+          achievement_type: string
+          id?: string
+          metadata?: Json | null
+          user_id: string
+        }
+        Update: {
+          achieved_at?: string
+          achievement_type?: string
+          id?: string
+          metadata?: Json | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       player_ratings: {
         Row: {
           comment: string | null
@@ -221,7 +245,23 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      player_statistics: {
+        Row: {
+          avatar_url: string | null
+          avg_rating: number | null
+          craque_titles: number | null
+          first_name: string | null
+          last_name: string | null
+          matches_as_goleiro: number | null
+          matches_as_linha: number | null
+          ranking_score: number | null
+          total_matches: number | null
+          total_ratings: number | null
+          total_votes_received: number | null
+          user_id: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       has_role: {
