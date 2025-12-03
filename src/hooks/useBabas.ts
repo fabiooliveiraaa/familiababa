@@ -29,6 +29,7 @@ export interface Registration {
   is_mensalista: boolean;
   waiting_position: number | null;
   manual_name: string | null;
+  is_champion: boolean;
   profiles?: {
     id: string;
     first_name: string;
