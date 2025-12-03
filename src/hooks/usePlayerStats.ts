@@ -12,6 +12,9 @@ export interface PlayerStats {
   avg_rating: number;
   total_ratings: number;
   craque_titles: number;
+  best_goalkeeper_titles: number;
+  worst_player_count: number;
+  champion_wins: number;
   total_votes_received: number;
   ranking_score: number;
 }
@@ -67,6 +70,18 @@ export const ACHIEVEMENTS: Record<string, Omit<Achievement, 'id' | 'type'>> = {
     description: '5 babas como goleiro',
     icon: '🧤',
     color: 'bg-red-500'
+  },
+  best_goalkeeper: {
+    name: 'Muralha',
+    description: 'Eleito melhor goleiro do baba',
+    icon: '🥅',
+    color: 'bg-emerald-500'
+  },
+  champion: {
+    name: 'Campeão',
+    description: 'Venceu um baba',
+    icon: '🏆',
+    color: 'bg-amber-500'
   }
 };
 
@@ -128,6 +143,12 @@ export function usePlayerStats(userId?: string) {
     }
     if (playerStats.matches_as_goleiro >= 5) {
       earned.push({ id: '7', type: 'goleiro_5', ...ACHIEVEMENTS.goleiro_5 });
+    }
+    if (playerStats.best_goalkeeper_titles >= 1) {
+      earned.push({ id: '8', type: 'best_goalkeeper', ...ACHIEVEMENTS.best_goalkeeper });
+    }
+    if (playerStats.champion_wins >= 1) {
+      earned.push({ id: '9', type: 'champion', ...ACHIEVEMENTS.champion });
     }
 
     setAchievements(earned);
