@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Calendar, Clock, MapPin, DollarSign, Users, Lock, Unlock, Loader2, Upload, Copy, CheckCircle, Trash2, Download, UserPlus } from 'lucide-react';
+import { UserSearchSelect } from '@/components/UserSearchSelect';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -52,7 +53,7 @@ export default function BabaDetails() {
   const [copied, setCopied] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [mensalistaDialogOpen, setMensalistaDialogOpen] = useState(false);
-  const [mensalistaName, setMensalistaName] = useState('');
+  const [selectedMensalista, setSelectedMensalista] = useState<{ id: string; first_name: string; last_name: string; avatar_url: string | null } | null>(null);
 
   const baba = babas.find((b) => b.id === id);
 
@@ -96,10 +97,10 @@ export default function BabaDetails() {
   };
 
   const handleAddMensalista = async () => {
-    if (!mensalistaName.trim()) return;
-    const success = await registerMensalista(mensalistaName);
+    if (!selectedMensalista) return;
+    const success = await registerMensalista(selectedMensalista.id);
     if (success) {
-      setMensalistaName('');
+      setSelectedMensalista(null);
       setMensalistaDialogOpen(false);
     }
   };
@@ -396,19 +397,24 @@ export default function BabaDetails() {
                       </DialogHeader>
                       <div className="space-y-4 pt-4">
                         <p className="text-xs sm:text-sm text-muted-foreground">
-                          Mensalistas são adicionados diretamente como confirmados.
+                          Mensalistas são adicionados diretamente como confirmados. Busque pelo nome do jogador cadastrado.
                         </p>
-                        <input
-                          type="text"
-                          placeholder="Nome do mensalista"
-                          value={mensalistaName}
-                          onChange={(e) => setMensalistaName(e.target.value)}
-                          className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring text-sm"
+                        <UserSearchSelect
+                          onSelect={setSelectedMensalista}
+                          excludeUserIds={registrations.map(r => r.user_id).filter((id): id is string => id !== null)}
+                          placeholder="Buscar jogador cadastrado..."
                         />
+                        {selectedMensalista && (
+                          <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
+                            <span className="text-sm font-medium">
+                              👑 {selectedMensalista.first_name} {selectedMensalista.last_name}
+                            </span>
+                          </div>
+                        )}
                         <Button 
                           className="w-full" 
                           onClick={handleAddMensalista}
-                          disabled={!mensalistaName.trim()}
+                          disabled={!selectedMensalista}
                         >
                           Adicionar
                         </Button>
