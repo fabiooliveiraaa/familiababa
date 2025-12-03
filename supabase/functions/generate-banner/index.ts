@@ -22,32 +22,73 @@ serve(async (req) => {
 
     let prompt = "";
     
+    // Brand colors: Orange (#F97316), Gold (#EAB308), Dark green (#166534), Black background
+    const brandStyle = `
+BRAND IDENTITY - CRITICAL:
+- Brand name is "FAMILIA BABA" (NOT "BAB", always write BABA with final A)
+- Primary colors: Vibrant orange (#F97316), golden yellow (#EAB308)
+- Secondary: Dark green (#166534) for accents, black/dark backgrounds
+- Style: Bold, energetic, modern sports aesthetic
+- Typography: Bold, impactful fonts with orange/gold gradient or solid orange text
+- Include a stylized soccer ball element
+`;
+
     if (type === "promotional") {
-      prompt = `Create a vibrant, professional sports promotional banner for a soccer match event called "FAMILIA BAB". 
-      
-Event details:
-- Title: ${babaInfo.title}
+      prompt = `Create a professional sports promotional banner for a Brazilian amateur soccer event.
+
+${brandStyle}
+
+EVENT DETAILS (display in Portuguese):
+- Event title: ${babaInfo.title}
 - Date: ${babaInfo.date}
-- Time: ${babaInfo.startTime} - ${babaInfo.endTime}
+- Time: ${babaInfo.startTime} às ${babaInfo.endTime}
 - Location: ${babaInfo.location}
 - Price: R$ ${babaInfo.price}
 
-Style: Modern sports design with green grass field background, dynamic energy, professional typography. Include soccer ball elements. The text "FAMILIA BAB" should be prominent. Use Brazilian Portuguese. Make it look like a WhatsApp shareable card with a 1:1 aspect ratio. Ultra high resolution.`;
+DESIGN REQUIREMENTS:
+- Header: "FAMILIA BABA" in large, bold orange/gold text with glow effect
+- Background: Soccer stadium or green grass field with dramatic lighting
+- Layout: Clean, organized with event info clearly readable
+- Add "Compartilhe!" text with WhatsApp icon
+- 1:1 square aspect ratio for WhatsApp sharing
+- Ultra high resolution, professional quality`;
     } else if (type === "bestPlayer") {
-      prompt = `Create a sports "Player of the Match" celebration card for "FAMILIA BAB" soccer event.
+      prompt = `Create a "Best Player" celebration card for a Brazilian amateur soccer event.
 
-Player: ${playerInfo.name}
-Event: ${babaInfo.title}
-Date: ${babaInfo.date}
+${brandStyle}
 
-Style: Golden/trophy theme, celebratory, professional sports design. Include star elements and a trophy icon. Text should say "CRAQUE DO BABA" (Best Player) prominently. Brazilian Portuguese. Make it shareable on WhatsApp with a 1:1 aspect ratio. Ultra high resolution.`;
+CONTENT:
+- Header: "FAMILIA BABA" in orange/gold at top
+- Main text: "CRAQUE DO BABA" (Best Player award)
+- Player name: ${playerInfo.name} (display prominently)
+- Event: ${babaInfo.title}
+- Date: ${babaInfo.date}
+
+DESIGN REQUIREMENTS:
+- Golden/trophy theme with stars and celebratory elements
+- Trophy or medal icon
+- Dramatic lighting, premium feel
+- Orange and gold color scheme matching brand
+- 1:1 square aspect ratio
+- Ultra high resolution`;
     } else if (type === "teams") {
-      prompt = `Create a sports team announcement card showing two teams for "FAMILIA BAB" soccer event.
+      prompt = `Create a team announcement card for a Brazilian amateur soccer event.
 
-Event: ${babaInfo.title}
-Date: ${babaInfo.date}
+${brandStyle}
 
-Style: Split design showing "TIME A" vs "TIME B". Use contrasting colors (blue vs red). Professional sports design with soccer elements. Brazilian Portuguese. Make it shareable on WhatsApp with a 1:1 aspect ratio. Ultra high resolution.`;
+CONTENT:
+- Header: "FAMILIA BABA" in orange/gold
+- Event: ${babaInfo.title}
+- Date: ${babaInfo.date}
+- Show "TIMES SORTEADOS" (Drawn Teams)
+
+DESIGN REQUIREMENTS:
+- Split design for multiple teams (TIME A vs TIME B, etc.)
+- Use orange and dark green as contrasting team colors
+- Soccer field or stadium background
+- Professional sports broadcast style
+- 1:1 square aspect ratio
+- Ultra high resolution`;
     }
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
