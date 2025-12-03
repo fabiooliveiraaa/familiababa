@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Header } from '@/components/Header';
 import { StarRating } from '@/components/StarRating';
+import { PlayerStatsCard } from '@/components/PlayerStatsCard';
 import { useProfile } from '@/hooks/useProfile';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useState, useRef } from 'react';
@@ -170,6 +171,11 @@ export default function Profile() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Statistics Card */}
+        <div className="mb-6">
+          <PlayerStatsCard userId={id || ''} />
+        </div>
 
         {/* Rating Section - Only show for other users */}
         {user && !isOwnProfile && (
