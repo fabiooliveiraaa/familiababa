@@ -94,20 +94,20 @@ export default function Profile() {
     <div className="min-h-screen bg-background">
       <Header />
 
-      <main className="container mx-auto px-4 py-6 max-w-2xl">
-        <Button variant="ghost" onClick={() => navigate(-1)} className="mb-4">
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Voltar
+      <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 max-w-2xl">
+        <Button variant="ghost" onClick={() => navigate(-1)} className="mb-3 sm:mb-4 -ml-2 h-9">
+          <ArrowLeft className="h-4 w-4 mr-1 sm:mr-2" />
+          <span className="text-sm">Voltar</span>
         </Button>
 
         {/* Profile Card */}
-        <Card className="border-2 mb-6">
-          <CardContent className="pt-6">
+        <Card className="border-2 mb-4 sm:mb-6">
+          <CardContent className="p-4 sm:pt-6 sm:p-6">
             <div className="flex flex-col items-center text-center">
               <div className="relative">
-                <Avatar className="h-32 w-32 border-4 border-primary">
+                <Avatar className="h-24 w-24 sm:h-32 sm:w-32 border-4 border-primary">
                   <AvatarImage src={profile.avatar_url || undefined} />
-                  <AvatarFallback className="bg-secondary text-secondary-foreground text-3xl font-bold">
+                  <AvatarFallback className="bg-secondary text-secondary-foreground text-2xl sm:text-3xl font-bold">
                     {profile.first_name[0]}{profile.last_name[0]}
                   </AvatarFallback>
                 </Avatar>
@@ -122,7 +122,7 @@ export default function Profile() {
                     />
                     <Button
                       size="sm"
-                      className="absolute bottom-0 right-0 rounded-full h-10 w-10 p-0"
+                      className="absolute bottom-0 right-0 rounded-full h-8 w-8 sm:h-10 sm:w-10 p-0"
                       onClick={() => fileInputRef.current?.click()}
                       disabled={uploading}
                     >
@@ -133,36 +133,36 @@ export default function Profile() {
               </div>
 
               {editing ? (
-                <div className="mt-4 space-y-4 w-full max-w-xs">
+                <div className="mt-4 space-y-3 sm:space-y-4 w-full max-w-xs">
                   <div>
-                    <Label>Nome</Label>
-                    <Input value={firstName} onChange={(e) => setFirstName(e.target.value)} />
+                    <Label className="text-sm">Nome</Label>
+                    <Input value={firstName} onChange={(e) => setFirstName(e.target.value)} className="h-9 sm:h-10" />
                   </div>
                   <div>
-                    <Label>Sobrenome</Label>
-                    <Input value={lastName} onChange={(e) => setLastName(e.target.value)} />
+                    <Label className="text-sm">Sobrenome</Label>
+                    <Input value={lastName} onChange={(e) => setLastName(e.target.value)} className="h-9 sm:h-10" />
                   </div>
                   <div className="flex gap-2">
-                    <Button onClick={handleSaveProfile} className="flex-1">Salvar</Button>
-                    <Button variant="outline" onClick={() => setEditing(false)} className="flex-1">Cancelar</Button>
+                    <Button onClick={handleSaveProfile} className="flex-1 h-9 sm:h-10 text-sm">Salvar</Button>
+                    <Button variant="outline" onClick={() => setEditing(false)} className="flex-1 h-9 sm:h-10 text-sm">Cancelar</Button>
                   </div>
                 </div>
               ) : (
                 <>
-                  <h1 className="text-2xl font-bold mt-4">{profile.first_name} {profile.last_name}</h1>
+                  <h1 className="text-xl sm:text-2xl font-bold mt-3 sm:mt-4">{profile.first_name} {profile.last_name}</h1>
                   
-                  <div className="flex items-center gap-2 mt-2">
+                  <div className="flex items-center gap-1.5 sm:gap-2 mt-2">
                     <StarRating rating={Math.round(averageRating)} size="lg" />
-                    <span className="text-xl font-bold text-warning">{averageRating > 0 ? averageRating.toFixed(1) : '-'}</span>
-                    <span className="text-sm text-muted-foreground">({ratings.length} {ratings.length === 1 ? 'avaliação' : 'avaliações'})</span>
+                    <span className="text-lg sm:text-xl font-bold text-warning">{averageRating > 0 ? averageRating.toFixed(1) : '-'}</span>
+                    <span className="text-xs sm:text-sm text-muted-foreground">({ratings.length})</span>
                   </div>
 
-                  <p className="text-sm text-muted-foreground mt-2">
-                    Membro desde {format(parseISO(profile.created_at), "MMMM 'de' yyyy", { locale: ptBR })}
+                  <p className="text-xs sm:text-sm text-muted-foreground mt-2">
+                    Desde {format(parseISO(profile.created_at), "MMM/yyyy", { locale: ptBR })}
                   </p>
 
                   {isOwnProfile && (
-                    <Button variant="outline" onClick={startEditing} className="mt-4">
+                    <Button variant="outline" onClick={startEditing} className="mt-3 sm:mt-4 h-9 sm:h-10 text-sm">
                       Editar Perfil
                     </Button>
                   )}
@@ -173,27 +173,27 @@ export default function Profile() {
         </Card>
 
         {/* Statistics Card */}
-        <div className="mb-6">
+        <div className="mb-4 sm:mb-6">
           <PlayerStatsCard userId={id || ''} />
         </div>
 
         {/* Rating Section - Only show for other users */}
         {user && !isOwnProfile && (
-          <Card className="border-2 mb-6">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Star className="h-5 w-5" />
+          <Card className="border-2 mb-4 sm:mb-6">
+            <CardHeader className="p-3 sm:p-6">
+              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                <Star className="h-4 w-4 sm:h-5 sm:w-5" />
                 Avaliar Jogador
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="p-3 sm:p-6 pt-0 space-y-3 sm:space-y-4">
               {existingRating && (
-                <p className="text-sm text-muted-foreground">
-                  Você já avaliou este jogador. Sua avaliação será atualizada.
+                <p className="text-xs sm:text-sm text-muted-foreground">
+                  Você já avaliou. Sua avaliação será atualizada.
                 </p>
               )}
               <div>
-                <Label className="mb-2 block">Nível Futebolístico</Label>
+                <Label className="mb-2 block text-sm">Nível Futebolístico</Label>
                 <StarRating 
                   rating={newRating || existingRating?.skill_rating || 0} 
                   size="lg" 
@@ -202,25 +202,26 @@ export default function Profile() {
                 />
               </div>
               <div>
-                <Label>Comentário (opcional)</Label>
+                <Label className="text-sm">Comentário (opcional)</Label>
                 <Textarea
-                  placeholder="Ex: Ótimo finalizador, joga bem de cabeça..."
+                  placeholder="Ex: Ótimo finalizador..."
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
-                  rows={3}
+                  rows={2}
+                  className="text-sm"
                 />
               </div>
               <Button 
                 onClick={handleSubmitRating} 
                 disabled={newRating === 0 || submittingRating}
-                className="w-full"
+                className="w-full h-9 sm:h-10 text-sm"
               >
                 {submittingRating ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                     Enviando...
                   </>
-                ) : existingRating ? 'Atualizar Avaliação' : 'Enviar Avaliação'}
+                ) : existingRating ? 'Atualizar' : 'Enviar Avaliação'}
               </Button>
             </CardContent>
           </Card>
@@ -228,46 +229,46 @@ export default function Profile() {
 
         {/* Reviews List */}
         <Card className="border-2">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <MessageSquare className="h-5 w-5" />
+          <CardHeader className="p-3 sm:p-6">
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <MessageSquare className="h-4 w-4 sm:h-5 sm:w-5" />
               Avaliações ({ratings.length})
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-3 sm:p-6 pt-0">
             {ratings.length === 0 ? (
-              <p className="text-center text-muted-foreground py-8">
+              <p className="text-center text-muted-foreground py-6 sm:py-8 text-sm">
                 Nenhuma avaliação ainda
               </p>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {ratings.map((rating) => (
-                  <div key={rating.id} className="p-4 rounded-lg bg-muted/50">
-                    <div className="flex items-center gap-3 mb-2">
+                  <div key={rating.id} className="p-3 sm:p-4 rounded-lg bg-muted/50">
+                    <div className="flex items-center gap-2 sm:gap-3 mb-2">
                       <Avatar 
-                        className="h-10 w-10 cursor-pointer" 
+                        className="h-8 w-8 sm:h-10 sm:w-10 cursor-pointer shrink-0" 
                         onClick={() => navigate(`/profile/${rating.rater_id}`)}
                       >
                         <AvatarImage src={rating.rater?.avatar_url || undefined} />
-                        <AvatarFallback className="bg-secondary text-secondary-foreground text-sm">
+                        <AvatarFallback className="bg-secondary text-secondary-foreground text-xs sm:text-sm">
                           {rating.rater?.first_name?.[0]}{rating.rater?.last_name?.[0]}
                         </AvatarFallback>
                       </Avatar>
-                      <div className="flex-1">
+                      <div className="flex-1 min-w-0">
                         <p 
-                          className="font-medium cursor-pointer hover:underline"
+                          className="font-medium cursor-pointer hover:underline text-sm sm:text-base truncate"
                           onClick={() => navigate(`/profile/${rating.rater_id}`)}
                         >
                           {rating.rater?.first_name} {rating.rater?.last_name}
                         </p>
                         <StarRating rating={rating.skill_rating} size="sm" />
                       </div>
-                      <span className="text-xs text-muted-foreground">
-                        {format(parseISO(rating.created_at), "dd/MM/yyyy")}
+                      <span className="text-xs text-muted-foreground shrink-0">
+                        {format(parseISO(rating.created_at), "dd/MM/yy")}
                       </span>
                     </div>
                     {rating.comment && (
-                      <p className="text-sm text-muted-foreground ml-13">{rating.comment}</p>
+                      <p className="text-xs sm:text-sm text-muted-foreground ml-10 sm:ml-13">{rating.comment}</p>
                     )}
                   </div>
                 ))}

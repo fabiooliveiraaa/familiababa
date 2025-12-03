@@ -78,33 +78,34 @@ export function PlayerList({ registrations, isAdmin, onStatusChange, onRemovePla
     return (
       <div
         key={reg.id}
-        className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
+        className="flex flex-col sm:flex-row sm:items-center justify-between p-2.5 sm:p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors gap-2 sm:gap-0"
       >
         <div 
-          className={`flex items-center gap-3 ${!isManualEntry ? 'cursor-pointer hover:opacity-80' : ''}`}
+          className={`flex items-center gap-2 sm:gap-3 min-w-0 ${!isManualEntry ? 'cursor-pointer hover:opacity-80' : ''}`}
           onClick={() => !isManualEntry && reg.user_id && navigate(`/profile/${reg.user_id}`)}
         >
-          <span className="text-sm font-bold text-muted-foreground w-6">
+          <span className="text-xs sm:text-sm font-bold text-muted-foreground w-5 sm:w-6 shrink-0 text-center">
             {isWaitingList ? reg.waiting_position : index + 1}
           </span>
-          <Avatar className="h-10 w-10 border-2 border-primary/20">
+          <Avatar className="h-8 w-8 sm:h-10 sm:w-10 border-2 border-primary/20 shrink-0">
             <AvatarImage src={profile?.avatar_url || undefined} />
-            <AvatarFallback className="bg-secondary text-secondary-foreground text-sm font-semibold">
+            <AvatarFallback className="bg-secondary text-secondary-foreground text-xs sm:text-sm font-semibold">
               {initials}
             </AvatarFallback>
           </Avatar>
-          <div className="flex items-center gap-2">
-            <p className={`font-medium text-foreground ${!isManualEntry ? 'hover:underline' : ''}`}>{displayName}</p>
+          <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+            <p className={`text-sm sm:text-base font-medium text-foreground truncate ${!isManualEntry ? 'hover:underline' : ''}`}>{displayName}</p>
             {reg.is_mensalista && (
-              <span title="Mensalista">👑</span>
+              <span title="Mensalista" className="shrink-0">👑</span>
             )}
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2 ml-7 sm:ml-0 flex-wrap sm:flex-nowrap">
           {showStatus && !isWaitingList && (
-            <Badge className={status.className}>
+            <Badge className={`${status.className} text-xs`}>
               <StatusIcon className="h-3 w-3 mr-1" />
-              {status.label}
+              <span className="hidden xs:inline">{status.label}</span>
+              <span className="xs:hidden">{status.label.slice(0, 3)}</span>
             </Badge>
           )}
           {isAdmin && reg.payment_proof_url && (
@@ -113,21 +114,21 @@ export function PlayerList({ registrations, isAdmin, onStatusChange, onRemovePla
                 <Button
                   size="sm"
                   variant="secondary"
-                  className="bg-primary/20 hover:bg-primary/30 text-primary"
+                  className="bg-primary/20 hover:bg-primary/30 text-primary h-7 sm:h-8 px-2 sm:px-3"
                 >
-                  <Eye className="h-3 w-3 mr-1" />
-                  Comprovante
+                  <Eye className="h-3 w-3 sm:mr-1" />
+                  <span className="hidden sm:inline">Comprovante</span>
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-2xl">
+              <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-auto">
                 <DialogHeader>
-                  <DialogTitle className="flex items-center gap-2">
-                    <FileText className="h-5 w-5" />
-                    Comprovante de Pagamento - {displayName}
+                  <DialogTitle className="flex items-center gap-2 text-sm sm:text-base">
+                    <FileText className="h-4 w-4 sm:h-5 sm:w-5" />
+                    <span className="truncate">Comprovante - {displayName}</span>
                   </DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4">
-                  <div className="bg-muted rounded-lg p-4 max-h-[60vh] overflow-auto">
+                  <div className="bg-muted rounded-lg p-2 sm:p-4 max-h-[50vh] overflow-auto">
                     {reg.payment_proof_url.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (
                       <img 
                         src={reg.payment_proof_url} 
@@ -136,15 +137,17 @@ export function PlayerList({ registrations, isAdmin, onStatusChange, onRemovePla
                       />
                     ) : (
                       <div className="text-center py-8">
-                        <FileText className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-                        <p className="text-muted-foreground">Arquivo PDF ou outro formato</p>
+                        <FileText className="h-12 w-12 sm:h-16 sm:w-16 mx-auto text-muted-foreground mb-4" />
+                        <p className="text-muted-foreground text-sm">Arquivo PDF ou outro formato</p>
                       </div>
                     )}
                   </div>
-                  <div className="flex justify-between items-center">
+                  <div className="flex flex-col sm:flex-row gap-2 sm:justify-between sm:items-center">
                     <Button
                       variant="outline"
                       asChild
+                      size="sm"
+                      className="w-full sm:w-auto"
                     >
                       <a href={reg.payment_proof_url} target="_blank" rel="noopener noreferrer">
                         <ExternalLink className="h-4 w-4 mr-2" />
@@ -154,7 +157,8 @@ export function PlayerList({ registrations, isAdmin, onStatusChange, onRemovePla
                     {reg.user_id && (
                       <Button
                         onClick={() => handleStatusChange(reg.user_id!, 'confirmado')}
-                        className="bg-success hover:bg-success/90"
+                        className="bg-success hover:bg-success/90 w-full sm:w-auto"
+                        size="sm"
                       >
                         <Check className="h-4 w-4 mr-2" />
                         Confirmar Pagamento
@@ -170,9 +174,10 @@ export function PlayerList({ registrations, isAdmin, onStatusChange, onRemovePla
               size="sm"
               variant="default"
               onClick={() => onPromoteFromWaitingList?.(reg.user_id!)}
+              className="h-7 sm:h-8 px-2 sm:px-3"
             >
-              <ArrowUp className="h-3 w-3 mr-1" />
-              Subir
+              <ArrowUp className="h-3 w-3 sm:mr-1" />
+              <span className="hidden sm:inline">Subir</span>
             </Button>
           )}
           {isAdmin && !isWaitingList && !isManualEntry && reg.user_id && (
@@ -180,27 +185,29 @@ export function PlayerList({ registrations, isAdmin, onStatusChange, onRemovePla
               size="sm"
               variant="outline"
               onClick={() => handleStatusChange(reg.user_id!, reg.status)}
+              className="h-7 sm:h-8 px-2 sm:px-3"
             >
-              Alterar
+              <span className="hidden sm:inline">Alterar</span>
+              <span className="sm:hidden">Alt</span>
             </Button>
           )}
           {isAdmin && (
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button size="sm" variant="destructive">
+                <Button size="sm" variant="destructive" className="h-7 sm:h-8 px-2">
                   <Trash2 className="h-3 w-3" />
                 </Button>
               </AlertDialogTrigger>
-              <AlertDialogContent>
+              <AlertDialogContent className="max-w-[90vw] sm:max-w-md">
                 <AlertDialogHeader>
                   <AlertDialogTitle>Remover jogador?</AlertDialogTitle>
                   <AlertDialogDescription>
                     Tem certeza que deseja remover {displayName} da lista?
                   </AlertDialogDescription>
                 </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                  <AlertDialogAction onClick={() => onRemovePlayer?.(reg.id)}>
+                <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+                  <AlertDialogCancel className="w-full sm:w-auto">Cancelar</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => onRemovePlayer?.(reg.id)} className="w-full sm:w-auto">
                     Remover
                   </AlertDialogAction>
                 </AlertDialogFooter>
@@ -213,16 +220,16 @@ export function PlayerList({ registrations, isAdmin, onStatusChange, onRemovePla
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Confirmed Linha Players */}
       <div>
-        <div className="flex items-center gap-2 mb-4">
-          <UserIcon className="h-5 w-5 text-success" />
-          <h3 className="text-lg font-bold">Jogadores Confirmados ({linhaConfirmed.length})</h3>
+        <div className="flex items-center gap-2 mb-3 sm:mb-4">
+          <UserIcon className="h-4 w-4 sm:h-5 sm:w-5 text-success" />
+          <h3 className="text-base sm:text-lg font-bold">Confirmados ({linhaConfirmed.length})</h3>
         </div>
-        <div className="space-y-2">
+        <div className="space-y-1.5 sm:space-y-2">
           {linhaConfirmed.length === 0 ? (
-            <p className="text-muted-foreground text-center py-4">Nenhum jogador confirmado ainda</p>
+            <p className="text-muted-foreground text-center py-3 sm:py-4 text-sm">Nenhum jogador confirmado ainda</p>
           ) : (
             linhaConfirmed.map((reg, idx) => renderPlayer(reg, idx, false))
           )}
@@ -231,13 +238,13 @@ export function PlayerList({ registrations, isAdmin, onStatusChange, onRemovePla
 
       {/* Goleiros */}
       <div>
-        <div className="flex items-center gap-2 mb-4">
-          <UserIcon className="h-5 w-5 text-accent" />
-          <h3 className="text-lg font-bold">Goleiros ({goleiros.length})</h3>
+        <div className="flex items-center gap-2 mb-3 sm:mb-4">
+          <UserIcon className="h-4 w-4 sm:h-5 sm:w-5 text-accent" />
+          <h3 className="text-base sm:text-lg font-bold">Goleiros ({goleiros.length})</h3>
         </div>
-        <div className="space-y-2">
+        <div className="space-y-1.5 sm:space-y-2">
           {goleiros.length === 0 ? (
-            <p className="text-muted-foreground text-center py-4">Nenhum goleiro inscrito</p>
+            <p className="text-muted-foreground text-center py-3 sm:py-4 text-sm">Nenhum goleiro inscrito</p>
           ) : (
             goleiros.map((reg, idx) => renderPlayer(reg, idx, false))
           )}
@@ -246,22 +253,22 @@ export function PlayerList({ registrations, isAdmin, onStatusChange, onRemovePla
 
       {/* Pending Linha Players */}
       {(isAdmin || linhaPending.length > 0) && (
-        <div className="border-t pt-6">
-          <div className="flex items-center gap-2 mb-4">
-            <Clock className="h-5 w-5 text-warning" />
-            <h3 className="text-lg font-bold">Aguardando Confirmação ({linhaPending.length})</h3>
+        <div className="border-t pt-4 sm:pt-6">
+          <div className="flex items-center gap-2 mb-3 sm:mb-4">
+            <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-warning" />
+            <h3 className="text-base sm:text-lg font-bold">Aguardando ({linhaPending.length})</h3>
           </div>
           {isAdmin ? (
-            <div className="space-y-2">
+            <div className="space-y-1.5 sm:space-y-2">
               {linhaPending.length === 0 ? (
-                <p className="text-muted-foreground text-center py-4">Nenhum jogador pendente</p>
+                <p className="text-muted-foreground text-center py-3 sm:py-4 text-sm">Nenhum jogador pendente</p>
               ) : (
                 linhaPending.map((reg, idx) => renderPlayer(reg, idx))
               )}
             </div>
           ) : (
-            <p className="text-muted-foreground text-center py-4">
-              {linhaPending.length} jogador(es) aguardando confirmação de pagamento
+            <p className="text-muted-foreground text-center py-3 sm:py-4 text-sm">
+              {linhaPending.length} jogador(es) aguardando confirmação
             </p>
           )}
         </div>
@@ -269,14 +276,14 @@ export function PlayerList({ registrations, isAdmin, onStatusChange, onRemovePla
 
       {/* Waiting List */}
       {(isAdmin || waitingList.length > 0) && (
-        <div className="border-t pt-6">
-          <div className="flex items-center gap-2 mb-4">
-            <Clock className="h-5 w-5 text-secondary-foreground" />
-            <h3 className="text-lg font-bold">Lista de Espera ({waitingList.length})</h3>
+        <div className="border-t pt-4 sm:pt-6">
+          <div className="flex items-center gap-2 mb-3 sm:mb-4">
+            <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-secondary-foreground" />
+            <h3 className="text-base sm:text-lg font-bold">Lista de Espera ({waitingList.length})</h3>
           </div>
-          <div className="space-y-2">
+          <div className="space-y-1.5 sm:space-y-2">
             {waitingList.length === 0 ? (
-              <p className="text-muted-foreground text-center py-4">Nenhum jogador na lista de espera</p>
+              <p className="text-muted-foreground text-center py-3 sm:py-4 text-sm">Nenhum jogador na lista de espera</p>
             ) : (
               waitingList.map((reg, idx) => renderPlayer(reg, idx, false, true))
             )}
