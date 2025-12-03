@@ -233,9 +233,16 @@ export function useBabaRegistrations(babaId: string) {
     return true;
   };
 
-  const registerMensalista = async (manualName: string) => {
-    if (!manualName.trim()) {
-      toast({ title: 'Digite o nome do mensalista', variant: 'destructive' });
+  const registerMensalista = async (userId: string) => {
+    if (!userId) {
+      toast({ title: 'Selecione um usuário', variant: 'destructive' });
+      return false;
+    }
+
+    // Check if user is already registered
+    const existingReg = registrations.find(r => r.user_id === userId);
+    if (existingReg) {
+      toast({ title: 'Este jogador já está inscrito neste baba', variant: 'destructive' });
       return false;
     }
     
@@ -243,10 +250,10 @@ export function useBabaRegistrations(babaId: string) {
       .from('registrations')
       .insert({
         baba_id: babaId,
+        user_id: userId,
         position: 'linha',
         status: 'confirmado',
         is_mensalista: true,
-        manual_name: manualName.trim(),
       });
     
     if (error) {
