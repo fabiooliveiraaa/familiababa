@@ -2,9 +2,14 @@ import { useEffect, useState } from 'react';
 import { Header } from '@/components/Header';
 import { BabaCard } from '@/components/BabaCard';
 import { RankingWidget } from '@/components/RankingWidget';
-import { Calendar, Loader2 } from 'lucide-react';
+import { Calendar, Loader2, ChevronDown, FolderClosed } from 'lucide-react';
 import { useBabas } from '@/hooks/useBabas';
 import { useAuthContext } from '@/contexts/AuthContext';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
 import { supabase } from '@/integrations/supabase/client';
 
 interface BabaCounts {
@@ -106,21 +111,31 @@ export default function BabaList() {
             )}
 
             {closedBabas.length > 0 && (
-              <section>
-                <h2 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-muted-foreground">
-                  Inscrições Fechadas
-                </h2>
-                <div className="grid gap-4 sm:gap-6 sm:grid-cols-2">
-                  {closedBabas.map((baba) => (
-                    <BabaCard 
-                      key={baba.id} 
-                      baba={baba}
-                      linhaCount={counts[baba.id]?.linha || 0}
-                      goleiroCount={counts[baba.id]?.goleiro || 0}
-                    />
-                  ))}
-                </div>
-              </section>
+              <Collapsible>
+                <CollapsibleTrigger className="w-full">
+                  <div className="flex items-center justify-between p-3 sm:p-4 bg-muted/50 rounded-lg hover:bg-muted transition-colors group">
+                    <div className="flex items-center gap-2 sm:gap-3">
+                      <FolderClosed className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
+                      <span className="text-sm sm:text-base font-medium text-muted-foreground">
+                        Babas Finalizados ({closedBabas.length})
+                      </span>
+                    </div>
+                    <ChevronDown className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
+                  </div>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <div className="grid gap-4 sm:gap-6 sm:grid-cols-2 mt-4">
+                    {closedBabas.map((baba) => (
+                      <BabaCard 
+                        key={baba.id} 
+                        baba={baba}
+                        linhaCount={counts[baba.id]?.linha || 0}
+                        goleiroCount={counts[baba.id]?.goleiro || 0}
+                      />
+                    ))}
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
             )}
 
             {babas.length === 0 && (
