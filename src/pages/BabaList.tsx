@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Header } from '@/components/Header';
 import { BabaCard } from '@/components/BabaCard';
 import { RankingWidget } from '@/components/RankingWidget';
+import { InstagramEmbed } from '@/components/InstagramEmbed';
 import { Calendar, Loader2, ChevronDown, FolderClosed } from 'lucide-react';
 import { useBabas } from '@/hooks/useBabas';
 import { useAuthContext } from '@/contexts/AuthContext';
@@ -72,9 +73,10 @@ export default function BabaList() {
       <Header />
       
       <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
-        {/* Mobile Ranking - shows first on mobile */}
-        <div className="lg:hidden mb-6">
+        {/* Mobile Ranking and Instagram - shows first on mobile */}
+        <div className="lg:hidden mb-6 space-y-6">
           <RankingWidget />
+          <InstagramEmbed />
         </div>
 
         <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
@@ -149,10 +151,11 @@ export default function BabaList() {
             )}
           </div>
 
-          {/* Desktop Sidebar with Ranking */}
+          {/* Desktop Sidebar with Ranking and Instagram */}
           <aside className="hidden lg:block lg:w-80 shrink-0">
-            <div className="sticky top-20">
+            <div className="sticky top-20 space-y-6">
               <RankingWidget />
+              <InstagramEmbed />
             </div>
           </aside>
         </div>
