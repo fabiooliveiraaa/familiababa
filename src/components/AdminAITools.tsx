@@ -85,9 +85,10 @@ export function AdminAITools({ baba, registrations }: AdminAIToolsProps) {
   // Inicializar ratings quando abrir o dialog
   const initializeRatings = () => {
     const initialRatings = confirmedPlayers.map(r => {
-      const name = r.is_mensalista 
-        ? r.manual_name 
-        : `${r.profiles?.first_name || ''} ${r.profiles?.last_name || ''}`.trim();
+      // Mensalistas are linked to profiles, so always use profile name
+      const name = r.profiles 
+        ? `${r.profiles.first_name || ''} ${r.profiles.last_name || ''}`.trim()
+        : r.manual_name || 'Jogador';
       
       return {
         id: r.id,

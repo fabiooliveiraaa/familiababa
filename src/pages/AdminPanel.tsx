@@ -55,7 +55,7 @@ export default function AdminPanel() {
     e.preventDefault();
     setSubmitting(true);
     
-    await createBaba({
+    const newBaba = await createBaba({
       title: formData.title,
       date: formData.date,
       start_time: formData.startTime,
@@ -69,18 +69,11 @@ export default function AdminPanel() {
       pix_key: formData.pixKey || null,
     });
 
-    setFormData({
-      title: '',
-      date: '',
-      startTime: '',
-      endTime: '',
-      location: '',
-      price: '',
-      maxLinhaPlayers: '24',
-      maxGoleiros: '3',
-      pixKey: '',
-    });
     setSubmitting(false);
+    
+    if (newBaba) {
+      navigate(`/baba/${newBaba.id}`);
+    }
   };
 
   return (
