@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Shuffle, Image, Loader2, Download, Users, Trophy, Share2, Star, AlertCircle, Settings } from 'lucide-react';
+import { Shuffle, Image, Loader2, Download, Users, Trophy, Share2, Star, AlertCircle, Settings, Edit } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -23,6 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { TeamEditor } from '@/components/TeamEditor';
 
 interface AdminAIToolsProps {
   baba: Baba;
@@ -74,7 +75,7 @@ export function AdminAITools({ baba, registrations }: AdminAIToolsProps) {
     playersPerTeam: 'auto',
     includeGoalkeepers: true,
   });
-  const [configStep, setConfigStep] = useState<'config' | 'ratings' | 'confirm' | 'result'>('config');
+  const [configStep, setConfigStep] = useState<'config' | 'ratings' | 'confirm' | 'result' | 'edit'>('config');
 
   // Hook para obter ranking de votação
   const { ranking } = useBabaVotes(baba.id);
@@ -499,7 +500,7 @@ export function AdminAITools({ baba, registrations }: AdminAIToolsProps) {
                   )}
                 </Button>
               </div>
-            ) : configStep === 'result' && teamResult && (
+            ) : configStep === 'result' && teamResult ? (
               /* Etapa 4: Resultado */
               <div className="space-y-4">
                 {/* Grid de Times Dinâmico */}
@@ -571,14 +572,14 @@ export function AdminAITools({ baba, registrations }: AdminAIToolsProps) {
                   </p>
                 </div>
 
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-wrap">
                   <Button 
                     variant="outline" 
                     onClick={() => {
                       setTeamResult(null);
                       setConfigStep('config');
                     }}
-                    className="flex-1"
+                    className="flex-1 min-w-[120px]"
                   >
                     Nova Configuração
                   </Button>
@@ -586,14 +587,56 @@ export function AdminAITools({ baba, registrations }: AdminAIToolsProps) {
                     variant="outline" 
                     onClick={handleTeamDraw}
                     disabled={loadingDraw}
-                    className="flex-1"
+                    className="flex-1 min-w-[120px]"
                   >
                     <Shuffle className="h-4 w-4 mr-2" />
                     Sortear Novamente
                   </Button>
                 </div>
+                
+                {/* Botão de Ajustar Times */}
+                <Button 
+                  onClick={() => setConfigStep('edit')}
+                  className="w-full"
+                  variant="secondary"
+                >
+                  <Edit className="h-4 w-4 mr-2" />
+                  Ajustar Times Manualmente
+                </Button>
               </div>
-            )}
+            ) : configStep === 'edit' && teamResult ? (
+              /* Etapa 5: Edição Manual */
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h5 className="font-medium flex items-center gap-2">
+                    <Edit className="h-4 w-4" />
+                    Ajuste Manual dos Times
+                  </h5>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => setConfigStep('result')}
+                  >
+                    ← Voltar
+                  </Button>
+                </div>
+                
+                <TeamEditor
+                  teams={teamResult.times}
+                  goleirosExcluidos={teamResult.goleirosExcluidos}
+                  jogadoresRestantes={teamResult.jogadoresRestantes}
+                  onTeamsChange={(updatedTeams) => {
+                    setTeamResult(prev => prev ? {
+                      ...prev,
+                      times: updatedTeams,
+                      analise: 'Times ajustados manualmente.'
+                    } : null);
+                    setConfigStep('result');
+                  }}
+                  onClose={() => setConfigStep('result')}
+                />
+              </div>
+            ) : null}
           </div>
         </DialogContent>
       </Dialog>
