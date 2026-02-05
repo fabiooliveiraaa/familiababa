@@ -16,6 +16,7 @@ export interface Baba {
   created_by: string;
   created_at: string;
   pix_key: string | null;
+  teams_data?: unknown | null;
 }
 
 export interface Registration {
@@ -72,10 +73,10 @@ export function useBabas() {
     };
   }, []);
 
-  const createBaba = async (babaData: Omit<Baba, 'id' | 'created_at'>) => {
+  const createBaba = async (babaData: Omit<Baba, 'id' | 'created_at' | 'teams_data'>) => {
     const { data, error } = await supabase
       .from('babas')
-      .insert(babaData)
+      .insert(babaData as any)
       .select()
       .single();
     

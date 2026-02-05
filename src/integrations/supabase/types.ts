@@ -87,6 +87,7 @@ export type Database = {
           pix_key: string | null
           price: number
           start_time: string
+          teams_data: Json | null
           title: string
           updated_at: string
           worst_player_id: string | null
@@ -107,6 +108,7 @@ export type Database = {
           pix_key?: string | null
           price: number
           start_time: string
+          teams_data?: Json | null
           title: string
           updated_at?: string
           worst_player_id?: string | null
@@ -127,6 +129,7 @@ export type Database = {
           pix_key?: string | null
           price?: number
           start_time?: string
+          teams_data?: Json | null
           title?: string
           updated_at?: string
           worst_player_id?: string | null
