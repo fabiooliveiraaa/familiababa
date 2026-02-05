@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Shuffle, Image, Loader2, Download, Users, Trophy, Share2, Star, AlertCircle, Settings, Edit } from 'lucide-react';
+import { Shuffle, Image, Loader2, Download, Users, Trophy, Share2, Star, AlertCircle, Settings, Edit, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -28,6 +28,7 @@ import { TeamEditor } from '@/components/TeamEditor';
 interface AdminAIToolsProps {
   baba: Baba;
   registrations: Registration[];
+  onTeamsPublished?: () => void;
 }
 
 interface PlayerRating {
@@ -56,11 +57,12 @@ interface DrawConfig {
   includeGoalkeepers: boolean;
 }
 
-export function AdminAITools({ baba, registrations }: AdminAIToolsProps) {
+export function AdminAITools({ baba, registrations, onTeamsPublished }: AdminAIToolsProps) {
   const [teamDrawOpen, setTeamDrawOpen] = useState(false);
   const [bannerOpen, setBannerOpen] = useState(false);
   const [loadingDraw, setLoadingDraw] = useState(false);
   const [loadingBanner, setLoadingBanner] = useState(false);
+  const [loadingPublish, setLoadingPublish] = useState(false);
   const [teamResult, setTeamResult] = useState<TeamDrawResult | null>(null);
   const [bannerUrl, setBannerUrl] = useState<string | null>(null);
   const [bannerType, setBannerType] = useState<'promotional' | 'teams' | 'bestPlayer'>('promotional');
@@ -602,6 +604,51 @@ export function AdminAITools({ baba, registrations }: AdminAIToolsProps) {
                 >
                   <Edit className="h-4 w-4 mr-2" />
                   Ajustar Times Manualmente
+                </Button>
+
+                {/* Botão de Publicar Times */}
+                <Button 
+                  onClick={async () => {
+                    if (!teamResult) return;
+                    setLoadingPublish(true);
+                    try {
+                      const teamsData = {
+                        times: teamResult.times,
+                        goleirosExcluidos: teamResult.goleirosExcluidos,
+                        publishedAt: new Date().toISOString(),
+                      };
+                      
+                      const { error } = await supabase
+                        .from('babas')
+                        .update({ teams_data: teamsData as unknown as null })
+                        .eq('id', baba.id);
+                      
+                      if (error) throw error;
+                      
+                      toast({ title: '✅ Times publicados com sucesso!', description: 'Os jogadores já podem ver os times.' });
+                      setTeamDrawOpen(false);
+                      onTeamsPublished?.();
+                    } catch (error) {
+                      console.error('Error publishing teams:', error);
+                      toast({ title: 'Erro ao publicar', variant: 'destructive' });
+                    } finally {
+                      setLoadingPublish(false);
+                    }
+                  }}
+                  className="w-full btn-glow"
+                  disabled={loadingPublish}
+                >
+                  {loadingPublish ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Publicando...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="h-4 w-4 mr-2" />
+                      Publicar Times
+                    </>
+                  )}
                 </Button>
               </div>
             ) : configStep === 'edit' && teamResult ? (

@@ -9,6 +9,7 @@ import { Header } from '@/components/Header';
 import { PlayerList } from '@/components/PlayerList';
 import { BabaVoting } from '@/components/BabaVoting';
 import { AdminAITools } from '@/components/AdminAITools';
+import { PublishedTeams } from '@/components/PublishedTeams';
 import { useBabas, useBabaRegistrations } from '@/hooks/useBabas';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { format, parseISO } from 'date-fns';
@@ -45,7 +46,7 @@ import {
 export default function BabaDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { babas, loading: babasLoading, toggleBabaOpen, deleteBaba } = useBabas();
+  const { babas, loading: babasLoading, toggleBabaOpen, deleteBaba, refetch: refetchBabas } = useBabas();
   const { registrations, loading: regsLoading, register, registerMensalista, promoteFromWaitingList, updateStatus, removeRegistration, refetch } = useBabaRegistrations(id || '');
   const { user, isAdmin } = useAuthContext();
   const [selectedPosition, setSelectedPosition] = useState<'linha' | 'goleiro'>('linha');
@@ -456,7 +457,11 @@ export default function BabaDetails() {
                   )}
 
                   <div className="border-t pt-3 mt-3">
-                    <AdminAITools baba={baba} registrations={registrations} />
+                    <AdminAITools 
+                      baba={baba} 
+                      registrations={registrations} 
+                      onTeamsPublished={refetchBabas}
+                    />
                   </div>
 
                   {!baba.is_open && (
@@ -502,6 +507,13 @@ export default function BabaDetails() {
               />
             </CardContent>
           </Card>
+
+          {/* Published Teams - Show when baba is closed and teams are published */}
+          {!baba.is_open && baba.teams_data && (
+            <div className="lg:col-span-3">
+              <PublishedTeams teamsData={baba.teams_data as unknown as { times: Array<{ nome: string; jogadores: Array<{ id: string; nome: string; posicao: string; rating: number }>; mediaRating: number }>; goleirosExcluidos?: Array<{ id: string; nome: string; rating: number }>; publishedAt: string }} />
+            </div>
+          )}
 
           {/* Voting Section - Only show when baba is closed */}
           {!baba.is_open && (
