@@ -351,6 +351,10 @@ export default function BabaDetails() {
                         </p>
                       )}
 
+                      <p className="text-xs text-center text-destructive font-bold animate-pulse">
+                        🚫 PROIBIDO JUNIOR MORAES 🚫
+                      </p>
+
                       <Button 
                         className="w-full btn-glow h-10 text-sm sm:text-base" 
                         onClick={handleRegister} 
