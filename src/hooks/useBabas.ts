@@ -268,6 +268,29 @@ export function useBabaRegistrations(babaId: string) {
     return true;
   };
 
+  const registerGuest = async (name: string, position: 'linha' | 'goleiro' = 'linha') => {
+    if (!name.trim()) {
+      toast({ title: 'Digite o nome do convidado', variant: 'destructive' });
+      return false;
+    }
+    const { error } = await supabase
+      .from('registrations')
+      .insert({
+        baba_id: babaId,
+        user_id: null,
+        position,
+        status: 'confirmado',
+        manual_name: name.trim(),
+      });
+    if (error) {
+      console.error('Error registering guest:', error);
+      toast({ title: 'Erro ao adicionar convidado', description: error.message, variant: 'destructive' });
+      return false;
+    }
+    toast({ title: 'Convidado adicionado!' });
+    return true;
+  };
+
   const promoteFromWaitingList = async (userId: string) => {
     const { error } = await supabase
       .from('registrations')
@@ -316,5 +339,5 @@ export function useBabaRegistrations(babaId: string) {
     return true;
   };
 
-  return { registrations, loading, register, registerMensalista, promoteFromWaitingList, updateStatus, removeRegistration, refetch: fetchRegistrations };
+  return { registrations, loading, register, registerMensalista, registerGuest, promoteFromWaitingList, updateStatus, removeRegistration, refetch: fetchRegistrations };
 }

@@ -1,7 +1,8 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Calendar, Clock, MapPin, DollarSign, Users, Lock, Unlock, Loader2, Upload, Copy, CheckCircle, Trash2, Download, UserPlus } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock, MapPin, DollarSign, Users, Lock, Unlock, Loader2, Upload, Copy, CheckCircle, Trash2, Download, UserPlus, UserRoundPlus } from 'lucide-react';
 import { ChampionTeamSelector } from '@/components/ChampionTeamSelector';
 import { UserSearchSelect } from '@/components/UserSearchSelect';
+import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -47,7 +48,7 @@ export default function BabaDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { babas, loading: babasLoading, toggleBabaOpen, deleteBaba, refetch: refetchBabas } = useBabas();
-  const { registrations, loading: regsLoading, register, registerMensalista, promoteFromWaitingList, updateStatus, removeRegistration, refetch } = useBabaRegistrations(id || '');
+  const { registrations, loading: regsLoading, register, registerMensalista, registerGuest, promoteFromWaitingList, updateStatus, removeRegistration, refetch } = useBabaRegistrations(id || '');
   const { user, isAdmin } = useAuthContext();
   const [selectedPosition, setSelectedPosition] = useState<'linha' | 'goleiro'>('linha');
   const [uploading, setUploading] = useState(false);
@@ -55,6 +56,9 @@ export default function BabaDetails() {
   const [copied, setCopied] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [mensalistaDialogOpen, setMensalistaDialogOpen] = useState(false);
+  const [guestDialogOpen, setGuestDialogOpen] = useState(false);
+  const [guestName, setGuestName] = useState('');
+  const [guestPosition, setGuestPosition] = useState<'linha' | 'goleiro'>('linha');
   const [selectedMensalista, setSelectedMensalista] = useState<{ id: string; first_name: string; last_name: string; avatar_url: string | null } | null>(null);
 
   const baba = babas.find((b) => b.id === id);
@@ -104,6 +108,15 @@ export default function BabaDetails() {
     if (success) {
       setSelectedMensalista(null);
       setMensalistaDialogOpen(false);
+    }
+  };
+
+  const handleAddGuest = async () => {
+    const success = await registerGuest(guestName, guestPosition);
+    if (success) {
+      setGuestName('');
+      setGuestPosition('linha');
+      setGuestDialogOpen(false);
     }
   };
 
@@ -421,6 +434,52 @@ export default function BabaDetails() {
                           className="w-full" 
                           onClick={handleAddMensalista}
                           disabled={!selectedMensalista}
+                        >
+                          Adicionar
+                        </Button>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+
+                  <Dialog open={guestDialogOpen} onOpenChange={setGuestDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" className="w-full h-9 sm:h-10 text-sm">
+                        <UserRoundPlus className="h-4 w-4 mr-2" /> Convidado
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-[90vw] sm:max-w-md">
+                      <DialogHeader>
+                        <DialogTitle>Adicionar Convidado 🎟️</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-4 pt-4">
+                        <p className="text-xs sm:text-sm text-muted-foreground">
+                          Convidados são jogadores sem cadastro. Digite o nome e selecione a posição.
+                        </p>
+                        <Input
+                          placeholder="Nome do convidado"
+                          value={guestName}
+                          onChange={(e) => setGuestName(e.target.value)}
+                        />
+                        <Select value={guestPosition} onValueChange={(v) => setGuestPosition(v as 'linha' | 'goleiro')}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Posição" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="linha">Linha</SelectItem>
+                            <SelectItem value="goleiro">Goleiro</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        {guestName.trim() && (
+                          <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
+                            <span className="text-sm font-medium">
+                              🎟️ {guestName.trim()} ({guestPosition === 'linha' ? 'Linha' : 'Goleiro'})
+                            </span>
+                          </div>
+                        )}
+                        <Button 
+                          className="w-full" 
+                          onClick={handleAddGuest}
+                          disabled={!guestName.trim()}
                         >
                           Adicionar
                         </Button>
