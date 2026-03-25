@@ -2,6 +2,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Calendar, Clock, MapPin, DollarSign, Users, Lock, Unlock, Loader2, Upload, Copy, CheckCircle, Trash2, Download, UserPlus, UserRoundPlus } from 'lucide-react';
 import { ChampionTeamSelector } from '@/components/ChampionTeamSelector';
 import { UserSearchSelect } from '@/components/UserSearchSelect';
+import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
