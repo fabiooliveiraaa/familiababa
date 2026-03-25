@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Calendar, Clock, MapPin, DollarSign, Users, Lock, Unlock, Loader2, Upload, Copy, CheckCircle, Trash2, Download, UserPlus } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock, MapPin, DollarSign, Users, Lock, Unlock, Loader2, Upload, Copy, CheckCircle, Trash2, Download, UserPlus, UserRoundPlus } from 'lucide-react';
 import { ChampionTeamSelector } from '@/components/ChampionTeamSelector';
 import { UserSearchSelect } from '@/components/UserSearchSelect';
 import { Button } from '@/components/ui/button';
@@ -47,7 +47,7 @@ export default function BabaDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { babas, loading: babasLoading, toggleBabaOpen, deleteBaba, refetch: refetchBabas } = useBabas();
-  const { registrations, loading: regsLoading, register, registerMensalista, promoteFromWaitingList, updateStatus, removeRegistration, refetch } = useBabaRegistrations(id || '');
+  const { registrations, loading: regsLoading, register, registerMensalista, registerGuest, promoteFromWaitingList, updateStatus, removeRegistration, refetch } = useBabaRegistrations(id || '');
   const { user, isAdmin } = useAuthContext();
   const [selectedPosition, setSelectedPosition] = useState<'linha' | 'goleiro'>('linha');
   const [uploading, setUploading] = useState(false);
@@ -55,6 +55,9 @@ export default function BabaDetails() {
   const [copied, setCopied] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [mensalistaDialogOpen, setMensalistaDialogOpen] = useState(false);
+  const [guestDialogOpen, setGuestDialogOpen] = useState(false);
+  const [guestName, setGuestName] = useState('');
+  const [guestPosition, setGuestPosition] = useState<'linha' | 'goleiro'>('linha');
   const [selectedMensalista, setSelectedMensalista] = useState<{ id: string; first_name: string; last_name: string; avatar_url: string | null } | null>(null);
 
   const baba = babas.find((b) => b.id === id);
@@ -104,6 +107,15 @@ export default function BabaDetails() {
     if (success) {
       setSelectedMensalista(null);
       setMensalistaDialogOpen(false);
+    }
+  };
+
+  const handleAddGuest = async () => {
+    const success = await registerGuest(guestName, guestPosition);
+    if (success) {
+      setGuestName('');
+      setGuestPosition('linha');
+      setGuestDialogOpen(false);
     }
   };
 
