@@ -440,6 +440,52 @@ export default function BabaDetails() {
                     </DialogContent>
                   </Dialog>
 
+                  <Dialog open={guestDialogOpen} onOpenChange={setGuestDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" className="w-full h-9 sm:h-10 text-sm">
+                        <UserRoundPlus className="h-4 w-4 mr-2" /> Convidado
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-[90vw] sm:max-w-md">
+                      <DialogHeader>
+                        <DialogTitle>Adicionar Convidado 🎟️</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-4 pt-4">
+                        <p className="text-xs sm:text-sm text-muted-foreground">
+                          Convidados são jogadores sem cadastro. Digite o nome e selecione a posição.
+                        </p>
+                        <Input
+                          placeholder="Nome do convidado"
+                          value={guestName}
+                          onChange={(e) => setGuestName(e.target.value)}
+                        />
+                        <Select value={guestPosition} onValueChange={(v) => setGuestPosition(v as 'linha' | 'goleiro')}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Posição" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="linha">Linha</SelectItem>
+                            <SelectItem value="goleiro">Goleiro</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        {guestName.trim() && (
+                          <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
+                            <span className="text-sm font-medium">
+                              🎟️ {guestName.trim()} ({guestPosition === 'linha' ? 'Linha' : 'Goleiro'})
+                            </span>
+                          </div>
+                        )}
+                        <Button 
+                          className="w-full" 
+                          onClick={handleAddGuest}
+                          disabled={!guestName.trim()}
+                        >
+                          Adicionar
+                        </Button>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+
                   <Button
                     variant={baba.is_open ? 'destructive' : 'default'}
                     className="w-full h-9 sm:h-10 text-sm"
