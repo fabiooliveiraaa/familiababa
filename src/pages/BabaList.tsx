@@ -73,11 +73,6 @@ export default function BabaList() {
       <Header />
       
       <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
-        {/* Mobile Ranking and Instagram - shows first on mobile */}
-        <div className="lg:hidden mb-6 space-y-6">
-          <RankingWidget />
-          <InstagramEmbed />
-        </div>
 
         <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
           {/* Main content */}
@@ -159,6 +154,12 @@ export default function BabaList() {
               <InstagramEmbed />
             </div>
           </aside>
+        </div>
+
+        {/* Mobile Ranking and Instagram - shown below main content on mobile */}
+        <div className="lg:hidden mt-8 space-y-6">
+          <RankingWidget />
+          <InstagramEmbed />
         </div>
       </main>
     </div>
