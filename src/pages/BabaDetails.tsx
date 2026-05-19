@@ -311,31 +311,38 @@ export default function BabaDetails() {
                     </div>
                   ) : baba.is_open ? (
                     <>
-                      <Select value={selectedPosition} onValueChange={(v) => setSelectedPosition(v as 'linha' | 'goleiro')}>
-                        <SelectTrigger className="h-10 text-sm">
-                          <SelectValue placeholder="Posição" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="linha">
-                            Linha {isLinhaFull && '(Espera)'}
-                          </SelectItem>
-                          <SelectItem value="goleiro" disabled={isGoleiroFull}>
-                            Goleiro {isGoleiroFull && '(Cheio)'}
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-
-                      {selectedPosition === 'linha' && isLinhaFull && (
-                        <p className="text-xs sm:text-sm text-warning bg-warning/10 p-2 rounded">
-                          ⚠️ Vagas cheias. Lista de espera.
-                        </p>
-                      )}
+                      <div className="grid grid-cols-2 gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setSelectedPosition('linha')}
+                          className={`rounded-lg border-2 p-3 text-center transition-all ${
+                            selectedPosition === 'linha'
+                              ? 'border-primary bg-primary/10 shadow-sm'
+                              : 'border-border bg-card hover:border-primary/40'
+                          }`}
+                        >
+                          <div className="text-2xl mb-1">⚽</div>
+                          <div className="text-sm font-semibold">Linha</div>
+                          {isLinhaFull && <div className="text-[10px] text-warning mt-0.5">Lista de espera</div>}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => !isGoleiroFull && setSelectedPosition('goleiro')}
+                          disabled={isGoleiroFull}
+                          className={`rounded-lg border-2 p-3 text-center transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
+                            selectedPosition === 'goleiro'
+                              ? 'border-primary bg-primary/10 shadow-sm'
+                              : 'border-border bg-card hover:border-primary/40'
+                          }`}
+                        >
+                          <div className="text-2xl mb-1">🧤</div>
+                          <div className="text-sm font-semibold">Goleiro</div>
+                          {isGoleiroFull && <div className="text-[10px] text-destructive mt-0.5">Cheio</div>}
+                        </button>
+                      </div>
 
                       {selectedPosition === 'linha' && (
                         <div className="space-y-2">
-                          <p className="text-xs sm:text-sm text-muted-foreground">
-                            Anexe o comprovante PIX:
-                          </p>
                           <input
                             type="file"
                             ref={fileInputRef}
@@ -345,31 +352,37 @@ export default function BabaDetails() {
                           />
                           <Button
                             type="button"
-                            variant="outline"
-                            className="w-full h-9 sm:h-10 text-sm"
+                            variant={paymentProofFile ? 'secondary' : 'outline'}
+                            className="w-full h-10 text-sm"
                             onClick={() => fileInputRef.current?.click()}
                           >
-                            <Upload className="h-4 w-4 mr-2 shrink-0" />
-                            <span className="truncate">{paymentProofFile ? paymentProofFile.name : 'Selecionar comprovante'}</span>
+                            {paymentProofFile ? (
+                              <>
+                                <CheckCircle className="h-4 w-4 mr-2 text-success shrink-0" />
+                                <span className="truncate">Comprovante anexado</span>
+                              </>
+                            ) : (
+                              <>
+                                <Upload className="h-4 w-4 mr-2 shrink-0" />
+                                <span className="truncate">Anexar comprovante PIX</span>
+                              </>
+                            )}
                           </Button>
-                          {paymentProofFile && (
-                            <p className="text-xs text-success">✓ Comprovante selecionado</p>
-                          )}
                         </div>
                       )}
 
                       {selectedPosition === 'goleiro' && (
-                        <p className="text-xs sm:text-sm text-muted-foreground bg-muted p-2 rounded">
-                          Goleiros não pagam e são confirmados automaticamente.
+                        <p className="text-xs text-muted-foreground bg-muted p-2 rounded text-center">
+                          🧤 Goleiros não pagam e são confirmados automaticamente.
                         </p>
                       )}
 
-                      <p className="text-xs text-center text-destructive font-bold animate-pulse">
+                      <p className="text-[11px] text-center text-destructive font-bold animate-pulse">
                         🚫 PROIBIDO JUNIOR MORAES 🚫
                       </p>
 
                       <Button 
-                        className="w-full btn-glow h-10 text-sm sm:text-base" 
+                        className="w-full btn-glow h-11 text-base font-semibold" 
                         onClick={handleRegister} 
                         disabled={!canRegister() || uploading}
                       >
@@ -379,9 +392,9 @@ export default function BabaDetails() {
                             Enviando...
                           </>
                         ) : isLinhaFull && selectedPosition === 'linha' ? (
-                          'Lista de Espera'
+                          'Entrar na lista de espera'
                         ) : (
-                          'Inscrever-se'
+                          'Confirmar inscrição'
                         )}
                       </Button>
                     </>
