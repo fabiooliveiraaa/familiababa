@@ -155,6 +155,12 @@ export default function BabaList() {
             </div>
           </aside>
         </div>
+
+        {/* Mobile Ranking and Instagram - shown below main content on mobile */}
+        <div className="lg:hidden mt-8 space-y-6">
+          <RankingWidget />
+          <InstagramEmbed />
+        </div>
       </main>
     </div>
   );
