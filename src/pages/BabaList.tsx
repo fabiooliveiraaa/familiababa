@@ -82,14 +82,15 @@ export default function BabaList() {
         <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
           {/* Main content */}
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-3 mb-6 sm:mb-8">
+            <div className="flex items-center gap-3 mb-5 sm:mb-8">
               <Calendar className="h-6 w-6 sm:h-8 sm:w-8 text-primary shrink-0" />
               <div className="min-w-0">
-                <h1 className="text-xl sm:text-2xl font-bold">Próximos Babas</h1>
-                <p className="text-sm sm:text-base text-muted-foreground truncate">
-                  {profile ? `Olá, ${profile.first_name}! ` : ''}
-                  Veja os babas disponíveis.
-                </p>
+                <h1 className="text-xl sm:text-2xl font-bold leading-tight">Próximos Babas</h1>
+                {profile && (
+                  <p className="text-xs sm:text-sm text-muted-foreground">
+                    Olá, {profile.first_name}!
+                  </p>
+                )}
               </div>
             </div>
 
