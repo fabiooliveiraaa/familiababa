@@ -89,14 +89,14 @@ export default function BabaList() {
               </div>
             </div>
 
-            {openBabas.length > 0 && (
+            {liveBabas.length > 0 && (
               <section className="mb-8 sm:mb-10">
                 <h2 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-success flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-success animate-pulse"></span>
                   Inscrições Abertas
                 </h2>
                 <div className="grid gap-4 sm:gap-6 sm:grid-cols-2">
-                  {openBabas.map((baba) => (
+                  {liveBabas.map((baba) => (
                     <BabaCard 
                       key={baba.id} 
                       baba={baba}
@@ -107,6 +107,26 @@ export default function BabaList() {
                 </div>
               </section>
             )}
+
+            {scheduledBabas.length > 0 && (
+              <section className="mb-8 sm:mb-10">
+                <h2 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-primary flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+                  Inscrições em Breve
+                </h2>
+                <div className="grid gap-4 sm:gap-6 sm:grid-cols-2">
+                  {scheduledBabas.map((baba) => (
+                    <BabaCard 
+                      key={baba.id} 
+                      baba={baba}
+                      linhaCount={counts[baba.id]?.linha || 0}
+                      goleiroCount={counts[baba.id]?.goleiro || 0}
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
+
 
             {closedBabas.length > 0 && (
               <Collapsible>
