@@ -1,0 +1,1 @@
+ALTER TABLE public.babas ADD COLUMN IF NOT EXISTS registration_opens_at timestamp with time zone;
