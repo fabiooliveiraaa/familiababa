@@ -60,6 +60,7 @@ export default function BabaDetails() {
   const [guestName, setGuestName] = useState('');
   const [guestPosition, setGuestPosition] = useState<'linha' | 'goleiro'>('linha');
   const [selectedMensalista, setSelectedMensalista] = useState<{ id: string; first_name: string; last_name: string; avatar_url: string | null } | null>(null);
+  const now = useNow();
 
   const baba = babas.find((b) => b.id === id);
 
