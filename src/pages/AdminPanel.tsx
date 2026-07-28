@@ -26,6 +26,7 @@ export default function AdminPanel() {
     maxLinhaPlayers: '24',
     maxGoleiros: '3',
     pixKey: '',
+    registrationOpensAt: '',
   });
 
   if (authLoading) {
