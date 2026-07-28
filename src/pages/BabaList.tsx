@@ -54,7 +54,8 @@ export default function BabaList() {
     };
   }, []);
 
-  const openBabas = babas.filter((b) => b.is_open);
+  const liveBabas = babas.filter((b) => isRegistrationLive(b, now));
+  const scheduledBabas = babas.filter((b) => isScheduledSoon(b, now));
   const closedBabas = babas.filter((b) => !b.is_open);
 
   if (loading) {
