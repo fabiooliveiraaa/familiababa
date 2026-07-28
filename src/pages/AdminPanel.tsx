@@ -198,6 +198,25 @@ export default function AdminPanel() {
                 />
               </div>
 
+              <div className="space-y-2 rounded-lg border-2 border-dashed border-primary/30 bg-primary/5 p-3">
+                <Label htmlFor="opensAt" className="flex items-center gap-2">
+                  <Clock className="h-4 w-4" />
+                  Abertura das inscrições (opcional)
+                </Label>
+                <Input
+                  id="opensAt"
+                  type="datetime-local"
+                  value={formData.registrationOpensAt}
+                  onChange={(e) => setFormData({ ...formData, registrationOpensAt: e.target.value })}
+                />
+                <p className="text-xs text-muted-foreground">
+                  O baba aparece na lista imediatamente, mas as inscrições só liberam
+                  automaticamente na data e hora escolhidas. Deixe vazio para abrir agora.
+                </p>
+              </div>
+
+
+
               <div className="border-t pt-4">
                 <Label className="flex items-center gap-2 mb-4">
                   <Users className="h-4 w-4" />
