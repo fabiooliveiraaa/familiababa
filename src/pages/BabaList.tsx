@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Header } from '@/components/Header';
 import { BabaCard } from '@/components/BabaCard';
-import { RankingWidget } from '@/components/RankingWidget';
+
 import { InstagramEmbed } from '@/components/InstagramEmbed';
 import { Calendar, Loader2, ChevronDown, FolderClosed } from 'lucide-react';
 import { useBabas } from '@/hooks/useBabas';
@@ -12,6 +12,7 @@ import {
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
 import { supabase } from '@/integrations/supabase/client';
+import { isRegistrationLive, isScheduledSoon, useNow } from '@/lib/registrationSchedule';
 
 interface BabaCounts {
   [babaId: string]: { linha: number; goleiro: number };
@@ -21,6 +22,7 @@ export default function BabaList() {
   const { babas, loading } = useBabas();
   const { profile } = useAuthContext();
   const [counts, setCounts] = useState<BabaCounts>({});
+  const now = useNow();
 
   useEffect(() => {
     const fetchCounts = async () => {
@@ -54,7 +56,8 @@ export default function BabaList() {
     };
   }, []);
 
-  const openBabas = babas.filter((b) => b.is_open);
+  const liveBabas = babas.filter((b) => isRegistrationLive(b, now));
+  const scheduledBabas = babas.filter((b) => isScheduledSoon(b, now));
   const closedBabas = babas.filter((b) => !b.is_open);
 
   if (loading) {
@@ -89,14 +92,14 @@ export default function BabaList() {
               </div>
             </div>
 
-            {openBabas.length > 0 && (
+            {liveBabas.length > 0 && (
               <section className="mb-8 sm:mb-10">
                 <h2 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-success flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-success animate-pulse"></span>
                   Inscrições Abertas
                 </h2>
                 <div className="grid gap-4 sm:gap-6 sm:grid-cols-2">
-                  {openBabas.map((baba) => (
+                  {liveBabas.map((baba) => (
                     <BabaCard 
                       key={baba.id} 
                       baba={baba}
@@ -107,6 +110,26 @@ export default function BabaList() {
                 </div>
               </section>
             )}
+
+            {scheduledBabas.length > 0 && (
+              <section className="mb-8 sm:mb-10">
+                <h2 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-primary flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+                  Inscrições em Breve
+                </h2>
+                <div className="grid gap-4 sm:gap-6 sm:grid-cols-2">
+                  {scheduledBabas.map((baba) => (
+                    <BabaCard 
+                      key={baba.id} 
+                      baba={baba}
+                      linhaCount={counts[baba.id]?.linha || 0}
+                      goleiroCount={counts[baba.id]?.goleiro || 0}
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
+
 
             {closedBabas.length > 0 && (
               <Collapsible>
@@ -147,18 +170,16 @@ export default function BabaList() {
             )}
           </div>
 
-          {/* Desktop Sidebar with Ranking and Instagram */}
+          {/* Desktop Sidebar with Instagram */}
           <aside className="hidden lg:block lg:w-80 shrink-0">
-            <div className="sticky top-20 space-y-6">
-              <RankingWidget />
+            <div className="sticky top-20">
               <InstagramEmbed />
             </div>
           </aside>
         </div>
 
-        {/* Mobile Ranking and Instagram - shown below main content on mobile */}
-        <div className="lg:hidden mt-8 space-y-6">
-          <RankingWidget />
+        {/* Instagram - shown below main content on mobile */}
+        <div className="lg:hidden mt-8">
           <InstagramEmbed />
         </div>
       </main>

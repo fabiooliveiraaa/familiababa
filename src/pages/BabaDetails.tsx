@@ -18,6 +18,7 @@ import { ptBR } from 'date-fns/locale';
 import { useState, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { formatCountdown, isRegistrationLive, useNow } from '@/lib/registrationSchedule';
 import {
   Select,
   SelectContent,
@@ -60,6 +61,7 @@ export default function BabaDetails() {
   const [guestName, setGuestName] = useState('');
   const [guestPosition, setGuestPosition] = useState<'linha' | 'goleiro'>('linha');
   const [selectedMensalista, setSelectedMensalista] = useState<{ id: string; first_name: string; last_name: string; avatar_url: string | null } | null>(null);
+  const now = useNow();
 
   const baba = babas.find((b) => b.id === id);
 
@@ -93,9 +95,14 @@ export default function BabaDetails() {
   const isUserRegistered = user && registrations.some((r) => r.user_id === user.id);
   const isLinhaFull = linhaCount >= baba.max_linha_players;
   const isGoleiroFull = goleiroCount >= baba.max_goleiros;
+  const registrationLive = isRegistrationLive(baba, now);
+  const scheduledOpening = baba.is_open && !registrationLive && !!baba.registration_opens_at;
+  const openingCountdown = baba.registration_opens_at
+    ? formatCountdown(baba.registration_opens_at, now)
+    : null;
 
   const canRegister = () => {
-    if (!baba.is_open) return false;
+    if (!registrationLive) return false;
     if (isUserRegistered) return false;
     if (selectedPosition === 'goleiro' && isGoleiroFull) return false;
     if (selectedPosition === 'linha' && !paymentProofFile) return false;
@@ -234,8 +241,8 @@ export default function BabaDetails() {
             <CardHeader className="bg-secondary p-3 sm:p-6">
               <div className="flex items-center justify-between gap-2">
                 <CardTitle className="text-secondary-foreground text-base sm:text-xl truncate">{baba.title}</CardTitle>
-                <Badge variant={baba.is_open ? 'default' : 'secondary'} className={`shrink-0 ${baba.is_open ? 'bg-success' : ''}`}>
-                  {baba.is_open ? 'Aberto' : 'Fechado'}
+                <Badge variant={registrationLive ? 'default' : 'secondary'} className={`shrink-0 ${registrationLive ? 'bg-success' : scheduledOpening ? 'bg-primary text-primary-foreground animate-pulse' : ''}`}>
+                  {registrationLive ? 'Aberto' : scheduledOpening ? 'Em breve' : 'Fechado'}
                 </Badge>
               </div>
             </CardHeader>
@@ -309,7 +316,7 @@ export default function BabaDetails() {
                     <div className="bg-success/20 p-3 sm:p-4 rounded-lg text-center">
                       <p className="font-semibold text-success text-sm sm:text-base">✓ Você está inscrito!</p>
                     </div>
-                  ) : baba.is_open ? (
+                  ) : registrationLive ? (
                     <>
                       <div className="grid grid-cols-2 gap-2">
                         <button
@@ -398,6 +405,16 @@ export default function BabaDetails() {
                         )}
                       </Button>
                     </>
+                  ) : scheduledOpening ? (
+                    <div className="rounded-lg border-2 border-primary/30 bg-primary/10 p-4 text-center animate-fade-in">
+                      <Clock className="h-6 w-6 mx-auto mb-2 text-primary animate-pulse" />
+                      <p className="text-sm font-semibold text-primary">
+                        Inscrições abrem em {openingCountdown ?? 'instantes'}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {format(new Date(baba.registration_opens_at!), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                      </p>
+                    </div>
                   ) : (
                     <div className="bg-muted p-3 sm:p-4 rounded-lg text-center">
                       <Lock className="h-5 w-5 sm:h-6 sm:w-6 mx-auto mb-2 text-muted-foreground" />

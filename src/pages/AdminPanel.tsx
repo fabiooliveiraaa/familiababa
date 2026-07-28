@@ -26,6 +26,7 @@ export default function AdminPanel() {
     maxLinhaPlayers: '24',
     maxGoleiros: '3',
     pixKey: '',
+    registrationOpensAt: '',
   });
 
   if (authLoading) {
@@ -68,6 +69,9 @@ export default function AdminPanel() {
       is_open: true,
       created_by: user.id,
       pix_key: formData.pixKey || null,
+      registration_opens_at: formData.registrationOpensAt
+        ? new Date(formData.registrationOpensAt).toISOString()
+        : null,
     });
 
     setSubmitting(false);
@@ -193,6 +197,25 @@ export default function AdminPanel() {
                   required
                 />
               </div>
+
+              <div className="space-y-2 rounded-lg border-2 border-dashed border-primary/30 bg-primary/5 p-3">
+                <Label htmlFor="opensAt" className="flex items-center gap-2">
+                  <Clock className="h-4 w-4" />
+                  Abertura das inscrições (opcional)
+                </Label>
+                <Input
+                  id="opensAt"
+                  type="datetime-local"
+                  value={formData.registrationOpensAt}
+                  onChange={(e) => setFormData({ ...formData, registrationOpensAt: e.target.value })}
+                />
+                <p className="text-xs text-muted-foreground">
+                  O baba aparece na lista imediatamente, mas as inscrições só liberam
+                  automaticamente na data e hora escolhidas. Deixe vazio para abrir agora.
+                </p>
+              </div>
+
+
 
               <div className="border-t pt-4">
                 <Label className="flex items-center gap-2 mb-4">

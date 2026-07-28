@@ -16,6 +16,7 @@ export interface Baba {
   created_by: string;
   created_at: string;
   pix_key: string | null;
+  registration_opens_at?: string | null;
   teams_data?: unknown | null;
 }
 

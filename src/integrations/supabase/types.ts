@@ -86,6 +86,7 @@ export type Database = {
           max_linha_players: number
           pix_key: string | null
           price: number
+          registration_opens_at: string | null
           start_time: string
           teams_data: Json | null
           title: string
@@ -107,6 +108,7 @@ export type Database = {
           max_linha_players?: number
           pix_key?: string | null
           price: number
+          registration_opens_at?: string | null
           start_time: string
           teams_data?: Json | null
           title: string
@@ -128,6 +130,7 @@ export type Database = {
           max_linha_players?: number
           pix_key?: string | null
           price?: number
+          registration_opens_at?: string | null
           start_time?: string
           teams_data?: Json | null
           title?: string
