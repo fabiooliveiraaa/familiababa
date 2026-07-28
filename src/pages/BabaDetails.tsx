@@ -316,7 +316,7 @@ export default function BabaDetails() {
                     <div className="bg-success/20 p-3 sm:p-4 rounded-lg text-center">
                       <p className="font-semibold text-success text-sm sm:text-base">✓ Você está inscrito!</p>
                     </div>
-                  ) : baba.is_open ? (
+                  ) : registrationLive ? (
                     <>
                       <div className="grid grid-cols-2 gap-2">
                         <button
