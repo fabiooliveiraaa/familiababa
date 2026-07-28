@@ -241,8 +241,8 @@ export default function BabaDetails() {
             <CardHeader className="bg-secondary p-3 sm:p-6">
               <div className="flex items-center justify-between gap-2">
                 <CardTitle className="text-secondary-foreground text-base sm:text-xl truncate">{baba.title}</CardTitle>
-                <Badge variant={baba.is_open ? 'default' : 'secondary'} className={`shrink-0 ${baba.is_open ? 'bg-success' : ''}`}>
-                  {baba.is_open ? 'Aberto' : 'Fechado'}
+                <Badge variant={registrationLive ? 'default' : 'secondary'} className={`shrink-0 ${registrationLive ? 'bg-success' : scheduledOpening ? 'bg-primary text-primary-foreground animate-pulse' : ''}`}>
+                  {registrationLive ? 'Aberto' : scheduledOpening ? 'Em breve' : 'Fechado'}
                 </Badge>
               </div>
             </CardHeader>
