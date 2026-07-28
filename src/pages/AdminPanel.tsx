@@ -69,6 +69,9 @@ export default function AdminPanel() {
       is_open: true,
       created_by: user.id,
       pix_key: formData.pixKey || null,
+      registration_opens_at: formData.registrationOpensAt
+        ? new Date(formData.registrationOpensAt).toISOString()
+        : null,
     });
 
     setSubmitting(false);
