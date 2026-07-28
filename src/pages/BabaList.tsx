@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Header } from '@/components/Header';
 import { BabaCard } from '@/components/BabaCard';
-import { RankingWidget } from '@/components/RankingWidget';
+
 import { InstagramEmbed } from '@/components/InstagramEmbed';
 import { Calendar, Loader2, ChevronDown, FolderClosed } from 'lucide-react';
 import { useBabas } from '@/hooks/useBabas';
