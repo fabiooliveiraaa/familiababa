@@ -12,6 +12,7 @@ import {
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
 import { supabase } from '@/integrations/supabase/client';
+import { isRegistrationLive, isScheduledSoon, useNow } from '@/lib/registrationSchedule';
 
 interface BabaCounts {
   [babaId: string]: { linha: number; goleiro: number };
