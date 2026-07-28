@@ -95,9 +95,14 @@ export default function BabaDetails() {
   const isUserRegistered = user && registrations.some((r) => r.user_id === user.id);
   const isLinhaFull = linhaCount >= baba.max_linha_players;
   const isGoleiroFull = goleiroCount >= baba.max_goleiros;
+  const registrationLive = isRegistrationLive(baba, now);
+  const scheduledOpening = baba.is_open && !registrationLive && !!baba.registration_opens_at;
+  const openingCountdown = baba.registration_opens_at
+    ? formatCountdown(baba.registration_opens_at, now)
+    : null;
 
   const canRegister = () => {
-    if (!baba.is_open) return false;
+    if (!registrationLive) return false;
     if (isUserRegistered) return false;
     if (selectedPosition === 'goleiro' && isGoleiroFull) return false;
     if (selectedPosition === 'linha' && !paymentProofFile) return false;
