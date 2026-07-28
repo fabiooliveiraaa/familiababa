@@ -147,18 +147,16 @@ export default function BabaList() {
             )}
           </div>
 
-          {/* Desktop Sidebar with Ranking and Instagram */}
+          {/* Desktop Sidebar with Instagram */}
           <aside className="hidden lg:block lg:w-80 shrink-0">
-            <div className="sticky top-20 space-y-6">
-              <RankingWidget />
+            <div className="sticky top-20">
               <InstagramEmbed />
             </div>
           </aside>
         </div>
 
-        {/* Mobile Ranking and Instagram - shown below main content on mobile */}
-        <div className="lg:hidden mt-8 space-y-6">
-          <RankingWidget />
+        {/* Instagram - shown below main content on mobile */}
+        <div className="lg:hidden mt-8">
           <InstagramEmbed />
         </div>
       </main>
