@@ -22,6 +22,7 @@ export default function BabaList() {
   const { babas, loading } = useBabas();
   const { profile } = useAuthContext();
   const [counts, setCounts] = useState<BabaCounts>({});
+  const now = useNow();
 
   useEffect(() => {
     const fetchCounts = async () => {
