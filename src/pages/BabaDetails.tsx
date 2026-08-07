@@ -184,6 +184,51 @@ export default function BabaDetails() {
     setUploading(false);
   };
 
+  const canGuestRegister = () => {
+    if (!registrationLive) return false;
+    if (visitorName.trim().length < 2) return false;
+    if (selectedPosition === 'goleiro' && isGoleiroFull) return false;
+    if (selectedPosition === 'linha' && !paymentProofFile) return false;
+    return true;
+  };
+
+  const handleGuestSelfRegister = async () => {
+    setUploading(true);
+    let paymentProofUrl: string | undefined;
+
+    if (selectedPosition === 'linha' && paymentProofFile) {
+      const fileExt = paymentProofFile.name.split('.').pop();
+      const fileName = `guests/${id}_${Date.now()}.${fileExt}`;
+
+      const { data, error } = await supabase.storage
+        .from('payment-proofs')
+        .upload(fileName, paymentProofFile);
+
+      if (error) {
+        toast({ title: 'Erro ao enviar comprovante', description: error.message, variant: 'destructive' });
+        setUploading(false);
+        return;
+      }
+
+      const { data: urlData } = supabase.storage.from('payment-proofs').getPublicUrl(data.path);
+      paymentProofUrl = urlData.publicUrl;
+    }
+
+    const ok = await selfRegisterGuest(
+      visitorName,
+      selectedPosition,
+      paymentProofUrl,
+      isLinhaFull && selectedPosition === 'linha',
+    );
+    if (ok) {
+      setVisitorName('');
+      setPaymentProofFile(null);
+    }
+    setUploading(false);
+  };
+
+
+
   const handleStatusChange = (userId: string, newStatus: 'inscrito' | 'pago' | 'confirmado' | 'lista_espera') => {
     updateStatus(userId, newStatus);
   };
