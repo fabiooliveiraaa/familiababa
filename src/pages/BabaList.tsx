@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/collapsible';
 import { supabase } from '@/integrations/supabase/client';
 import { isRegistrationLive, isScheduledSoon, useNow } from '@/lib/registrationSchedule';
+import { useBabaAlerts } from '@/hooks/useBabaAlerts';
 
 interface BabaCounts {
   [babaId: string]: { linha: number; goleiro: number };
