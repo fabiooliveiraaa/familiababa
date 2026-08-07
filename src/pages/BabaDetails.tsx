@@ -19,6 +19,7 @@ import { useState, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { formatCountdown, isRegistrationLive, useNow } from '@/lib/registrationSchedule';
+import { NotifyBell } from '@/components/NotifyBell';
 import {
   Select,
   SelectContent,
@@ -49,7 +50,7 @@ export default function BabaDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { babas, loading: babasLoading, toggleBabaOpen, deleteBaba, refetch: refetchBabas } = useBabas();
-  const { registrations, loading: regsLoading, register, registerMensalista, registerGuest, promoteFromWaitingList, updateStatus, removeRegistration, refetch } = useBabaRegistrations(id || '');
+  const { registrations, loading: regsLoading, register, registerMensalista, registerGuest, selfRegisterGuest, promoteFromWaitingList, updateStatus, removeRegistration, refetch } = useBabaRegistrations(id || '');
   const { user, isAdmin } = useAuthContext();
   const [selectedPosition, setSelectedPosition] = useState<'linha' | 'goleiro'>('linha');
   const [uploading, setUploading] = useState(false);
@@ -61,6 +62,7 @@ export default function BabaDetails() {
   const [guestName, setGuestName] = useState('');
   const [guestPosition, setGuestPosition] = useState<'linha' | 'goleiro'>('linha');
   const [selectedMensalista, setSelectedMensalista] = useState<{ id: string; first_name: string; last_name: string; avatar_url: string | null } | null>(null);
+  const [visitorName, setVisitorName] = useState('');
   const now = useNow();
 
   const baba = babas.find((b) => b.id === id);
@@ -182,6 +184,51 @@ export default function BabaDetails() {
     setPaymentProofFile(null);
     setUploading(false);
   };
+
+  const canGuestRegister = () => {
+    if (!registrationLive) return false;
+    if (visitorName.trim().length < 2) return false;
+    if (selectedPosition === 'goleiro' && isGoleiroFull) return false;
+    if (selectedPosition === 'linha' && !paymentProofFile) return false;
+    return true;
+  };
+
+  const handleGuestSelfRegister = async () => {
+    setUploading(true);
+    let paymentProofUrl: string | undefined;
+
+    if (selectedPosition === 'linha' && paymentProofFile) {
+      const fileExt = paymentProofFile.name.split('.').pop();
+      const fileName = `guests/${id}_${Date.now()}.${fileExt}`;
+
+      const { data, error } = await supabase.storage
+        .from('payment-proofs')
+        .upload(fileName, paymentProofFile);
+
+      if (error) {
+        toast({ title: 'Erro ao enviar comprovante', description: error.message, variant: 'destructive' });
+        setUploading(false);
+        return;
+      }
+
+      const { data: urlData } = supabase.storage.from('payment-proofs').getPublicUrl(data.path);
+      paymentProofUrl = urlData.publicUrl;
+    }
+
+    const ok = await selfRegisterGuest(
+      visitorName,
+      selectedPosition,
+      paymentProofUrl,
+      isLinhaFull && selectedPosition === 'linha',
+    );
+    if (ok) {
+      setVisitorName('');
+      setPaymentProofFile(null);
+    }
+    setUploading(false);
+  };
+
+
 
   const handleStatusChange = (userId: string, newStatus: 'inscrito' | 'pago' | 'confirmado' | 'lista_espera') => {
     updateStatus(userId, newStatus);
@@ -406,15 +453,19 @@ export default function BabaDetails() {
                       </Button>
                     </>
                   ) : scheduledOpening ? (
-                    <div className="rounded-lg border-2 border-primary/30 bg-primary/10 p-4 text-center animate-fade-in">
-                      <Clock className="h-6 w-6 mx-auto mb-2 text-primary animate-pulse" />
-                      <p className="text-sm font-semibold text-primary">
-                        Inscrições abrem em {openingCountdown ?? 'instantes'}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {format(new Date(baba.registration_opens_at!), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
-                      </p>
-                    </div>
+                    <>
+                      <div className="rounded-lg border-2 border-primary/30 bg-primary/10 p-4 text-center animate-fade-in">
+                        <Clock className="h-6 w-6 mx-auto mb-2 text-primary animate-pulse" />
+                        <p className="text-sm font-semibold text-primary">
+                          Inscrições abrem em {openingCountdown ?? 'instantes'}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {format(new Date(baba.registration_opens_at!), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                        </p>
+                      </div>
+                      <NotifyBell babaId={baba.id} full />
+                    </>
+
                   ) : (
                     <div className="bg-muted p-3 sm:p-4 rounded-lg text-center">
                       <Lock className="h-5 w-5 sm:h-6 sm:w-6 mx-auto mb-2 text-muted-foreground" />
@@ -425,12 +476,141 @@ export default function BabaDetails() {
               )}
 
               {!user && (
-                <div className="border-t pt-3 sm:pt-4">
-                  <Button className="w-full h-10 text-sm sm:text-base" onClick={() => navigate('/auth')}>
-                    Entrar para se inscrever
-                  </Button>
+                <div className="border-t pt-3 sm:pt-4 space-y-3">
+                  {registrationLive ? (
+                    <>
+                      <div>
+                        <h4 className="font-semibold text-sm sm:text-base">Inscreva-se sem cadastro</h4>
+                        <p className="text-xs text-muted-foreground">
+                          É rapidinho: nome, posição e pronto.
+                        </p>
+                      </div>
+
+                      <Input
+                        value={visitorName}
+                        onChange={(e) => setVisitorName(e.target.value)}
+                        placeholder="Seu nome e sobrenome"
+                        className="h-11 text-base"
+                        autoComplete="name"
+                      />
+
+                      <div className="grid grid-cols-2 gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setSelectedPosition('linha')}
+                          className={`rounded-lg border-2 p-3 text-center transition-all ${
+                            selectedPosition === 'linha'
+                              ? 'border-primary bg-primary/10 shadow-sm'
+                              : 'border-border bg-card hover:border-primary/40'
+                          }`}
+                        >
+                          <div className="text-2xl mb-1">⚽</div>
+                          <div className="text-sm font-semibold">Linha</div>
+                          {isLinhaFull && <div className="text-[10px] text-warning mt-0.5">Lista de espera</div>}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => !isGoleiroFull && setSelectedPosition('goleiro')}
+                          disabled={isGoleiroFull}
+                          className={`rounded-lg border-2 p-3 text-center transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
+                            selectedPosition === 'goleiro'
+                              ? 'border-primary bg-primary/10 shadow-sm'
+                              : 'border-border bg-card hover:border-primary/40'
+                          }`}
+                        >
+                          <div className="text-2xl mb-1">🧤</div>
+                          <div className="text-sm font-semibold">Goleiro</div>
+                          {isGoleiroFull && <div className="text-[10px] text-destructive mt-0.5">Cheio</div>}
+                        </button>
+                      </div>
+
+                      {selectedPosition === 'linha' && (
+                        <>
+                          <input
+                            type="file"
+                            ref={fileInputRef}
+                            onChange={handleFileChange}
+                            accept="image/*,.pdf"
+                            className="hidden"
+                          />
+                          <Button
+                            type="button"
+                            variant={paymentProofFile ? 'secondary' : 'outline'}
+                            className="w-full h-11 text-sm"
+                            onClick={() => fileInputRef.current?.click()}
+                          >
+                            {paymentProofFile ? (
+                              <>
+                                <CheckCircle className="h-4 w-4 mr-2 text-success shrink-0" />
+                                <span className="truncate">Comprovante anexado</span>
+                              </>
+                            ) : (
+                              <>
+                                <Upload className="h-4 w-4 mr-2 shrink-0" />
+                                <span className="truncate">Anexar comprovante PIX</span>
+                              </>
+                            )}
+                          </Button>
+                        </>
+                      )}
+
+                      {selectedPosition === 'goleiro' && (
+                        <p className="text-xs text-muted-foreground bg-muted p-2 rounded text-center">
+                          🧤 Goleiros não pagam.
+                        </p>
+                      )}
+
+                      <p className="text-[11px] text-center text-destructive font-bold animate-pulse">
+                        🚫 PROIBIDO JUNIOR MORAES 🚫
+                      </p>
+
+                      <Button
+                        className="w-full btn-glow h-12 text-base font-semibold"
+                        onClick={handleGuestSelfRegister}
+                        disabled={!canGuestRegister() || uploading}
+                      >
+                        {uploading ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Enviando...
+                          </>
+                        ) : isLinhaFull && selectedPosition === 'linha' ? (
+                          'Entrar na lista de espera'
+                        ) : (
+                          'Confirmar inscrição'
+                        )}
+                      </Button>
+
+                      <button
+                        type="button"
+                        onClick={() => navigate('/auth')}
+                        className="w-full text-xs text-muted-foreground underline underline-offset-4"
+                      >
+                        Já tem conta? Entrar
+                      </button>
+                    </>
+                  ) : scheduledOpening ? (
+                    <>
+                      <div className="rounded-lg border-2 border-primary/30 bg-primary/10 p-4 text-center animate-fade-in">
+                        <Clock className="h-6 w-6 mx-auto mb-2 text-primary animate-pulse" />
+                        <p className="text-sm font-semibold text-primary">
+                          Inscrições abrem em {openingCountdown ?? 'instantes'}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {format(new Date(baba.registration_opens_at!), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                        </p>
+                      </div>
+                      <NotifyBell babaId={baba.id} full />
+                    </>
+                  ) : (
+                    <div className="bg-muted p-3 sm:p-4 rounded-lg text-center">
+                      <Lock className="h-5 w-5 sm:h-6 sm:w-6 mx-auto mb-2 text-muted-foreground" />
+                      <p className="text-muted-foreground text-sm">Inscrições fechadas</p>
+                    </div>
+                  )}
                 </div>
               )}
+
 
               {isAdmin && (
                 <div className="border-t pt-3 sm:pt-4 space-y-2 sm:space-y-3">

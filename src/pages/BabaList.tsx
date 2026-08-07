@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/collapsible';
 import { supabase } from '@/integrations/supabase/client';
 import { isRegistrationLive, isScheduledSoon, useNow } from '@/lib/registrationSchedule';
+import { useBabaAlerts } from '@/hooks/useBabaAlerts';
 
 interface BabaCounts {
   [babaId: string]: { linha: number; goleiro: number };
@@ -23,6 +24,8 @@ export default function BabaList() {
   const { profile } = useAuthContext();
   const [counts, setCounts] = useState<BabaCounts>({});
   const now = useNow();
+
+  useBabaAlerts(babas);
 
   useEffect(() => {
     const fetchCounts = async () => {

@@ -7,6 +7,7 @@ import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useNavigate } from 'react-router-dom';
 import { formatCountdown, isRegistrationLive, useNow } from '@/lib/registrationSchedule';
+import { NotifyBell } from '@/components/NotifyBell';
 
 interface BabaCardProps {
   baba: Baba;
@@ -81,9 +82,9 @@ export function BabaCard({ baba, linhaCount, goleiroCount }: BabaCardProps) {
           </div>
         </div>
       </CardContent>
-      <CardFooter className="p-3 sm:p-6 pt-0">
+      <CardFooter className="p-3 sm:p-6 pt-0 gap-2">
         <Button 
-          className="w-full btn-glow text-sm sm:text-base h-10 sm:h-11 font-semibold" 
+          className="flex-1 btn-glow text-sm sm:text-base h-11 font-semibold" 
           variant={scheduled ? 'outline' : 'default'}
           onClick={() => navigate(`/baba/${baba.id}`)}
         >
@@ -93,6 +94,7 @@ export function BabaCard({ baba, linhaCount, goleiroCount }: BabaCardProps) {
               ? (isFull ? 'Entrar na lista de espera' : 'Quero jogar')
               : 'Ver detalhes'}
         </Button>
+        {scheduled && <NotifyBell babaId={baba.id} className="h-11 w-11" />}
       </CardFooter>
     </Card>
   );
