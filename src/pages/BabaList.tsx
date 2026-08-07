@@ -25,6 +25,8 @@ export default function BabaList() {
   const [counts, setCounts] = useState<BabaCounts>({});
   const now = useNow();
 
+  useBabaAlerts(babas);
+
   useEffect(() => {
     const fetchCounts = async () => {
       const { data } = await supabase
