@@ -453,15 +453,19 @@ export default function BabaDetails() {
                       </Button>
                     </>
                   ) : scheduledOpening ? (
-                    <div className="rounded-lg border-2 border-primary/30 bg-primary/10 p-4 text-center animate-fade-in">
-                      <Clock className="h-6 w-6 mx-auto mb-2 text-primary animate-pulse" />
-                      <p className="text-sm font-semibold text-primary">
-                        Inscrições abrem em {openingCountdown ?? 'instantes'}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {format(new Date(baba.registration_opens_at!), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
-                      </p>
-                    </div>
+                    <>
+                      <div className="rounded-lg border-2 border-primary/30 bg-primary/10 p-4 text-center animate-fade-in">
+                        <Clock className="h-6 w-6 mx-auto mb-2 text-primary animate-pulse" />
+                        <p className="text-sm font-semibold text-primary">
+                          Inscrições abrem em {openingCountdown ?? 'instantes'}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {format(new Date(baba.registration_opens_at!), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                        </p>
+                      </div>
+                      <NotifyBell babaId={baba.id} full />
+                    </>
+
                   ) : (
                     <div className="bg-muted p-3 sm:p-4 rounded-lg text-center">
                       <Lock className="h-5 w-5 sm:h-6 sm:w-6 mx-auto mb-2 text-muted-foreground" />
