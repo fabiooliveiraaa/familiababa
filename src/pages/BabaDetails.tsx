@@ -471,12 +471,141 @@ export default function BabaDetails() {
               )}
 
               {!user && (
-                <div className="border-t pt-3 sm:pt-4">
-                  <Button className="w-full h-10 text-sm sm:text-base" onClick={() => navigate('/auth')}>
-                    Entrar para se inscrever
-                  </Button>
+                <div className="border-t pt-3 sm:pt-4 space-y-3">
+                  {registrationLive ? (
+                    <>
+                      <div>
+                        <h4 className="font-semibold text-sm sm:text-base">Inscreva-se sem cadastro</h4>
+                        <p className="text-xs text-muted-foreground">
+                          É rapidinho: nome, posição e pronto.
+                        </p>
+                      </div>
+
+                      <Input
+                        value={visitorName}
+                        onChange={(e) => setVisitorName(e.target.value)}
+                        placeholder="Seu nome e sobrenome"
+                        className="h-11 text-base"
+                        autoComplete="name"
+                      />
+
+                      <div className="grid grid-cols-2 gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setSelectedPosition('linha')}
+                          className={`rounded-lg border-2 p-3 text-center transition-all ${
+                            selectedPosition === 'linha'
+                              ? 'border-primary bg-primary/10 shadow-sm'
+                              : 'border-border bg-card hover:border-primary/40'
+                          }`}
+                        >
+                          <div className="text-2xl mb-1">⚽</div>
+                          <div className="text-sm font-semibold">Linha</div>
+                          {isLinhaFull && <div className="text-[10px] text-warning mt-0.5">Lista de espera</div>}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => !isGoleiroFull && setSelectedPosition('goleiro')}
+                          disabled={isGoleiroFull}
+                          className={`rounded-lg border-2 p-3 text-center transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
+                            selectedPosition === 'goleiro'
+                              ? 'border-primary bg-primary/10 shadow-sm'
+                              : 'border-border bg-card hover:border-primary/40'
+                          }`}
+                        >
+                          <div className="text-2xl mb-1">🧤</div>
+                          <div className="text-sm font-semibold">Goleiro</div>
+                          {isGoleiroFull && <div className="text-[10px] text-destructive mt-0.5">Cheio</div>}
+                        </button>
+                      </div>
+
+                      {selectedPosition === 'linha' && (
+                        <>
+                          <input
+                            type="file"
+                            ref={fileInputRef}
+                            onChange={handleFileChange}
+                            accept="image/*,.pdf"
+                            className="hidden"
+                          />
+                          <Button
+                            type="button"
+                            variant={paymentProofFile ? 'secondary' : 'outline'}
+                            className="w-full h-11 text-sm"
+                            onClick={() => fileInputRef.current?.click()}
+                          >
+                            {paymentProofFile ? (
+                              <>
+                                <CheckCircle className="h-4 w-4 mr-2 text-success shrink-0" />
+                                <span className="truncate">Comprovante anexado</span>
+                              </>
+                            ) : (
+                              <>
+                                <Upload className="h-4 w-4 mr-2 shrink-0" />
+                                <span className="truncate">Anexar comprovante PIX</span>
+                              </>
+                            )}
+                          </Button>
+                        </>
+                      )}
+
+                      {selectedPosition === 'goleiro' && (
+                        <p className="text-xs text-muted-foreground bg-muted p-2 rounded text-center">
+                          🧤 Goleiros não pagam.
+                        </p>
+                      )}
+
+                      <p className="text-[11px] text-center text-destructive font-bold animate-pulse">
+                        🚫 PROIBIDO JUNIOR MORAES 🚫
+                      </p>
+
+                      <Button
+                        className="w-full btn-glow h-12 text-base font-semibold"
+                        onClick={handleGuestSelfRegister}
+                        disabled={!canGuestRegister() || uploading}
+                      >
+                        {uploading ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Enviando...
+                          </>
+                        ) : isLinhaFull && selectedPosition === 'linha' ? (
+                          'Entrar na lista de espera'
+                        ) : (
+                          'Confirmar inscrição'
+                        )}
+                      </Button>
+
+                      <button
+                        type="button"
+                        onClick={() => navigate('/auth')}
+                        className="w-full text-xs text-muted-foreground underline underline-offset-4"
+                      >
+                        Já tem conta? Entrar
+                      </button>
+                    </>
+                  ) : scheduledOpening ? (
+                    <>
+                      <div className="rounded-lg border-2 border-primary/30 bg-primary/10 p-4 text-center animate-fade-in">
+                        <Clock className="h-6 w-6 mx-auto mb-2 text-primary animate-pulse" />
+                        <p className="text-sm font-semibold text-primary">
+                          Inscrições abrem em {openingCountdown ?? 'instantes'}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {format(new Date(baba.registration_opens_at!), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                        </p>
+                      </div>
+                      <NotifyBell babaId={baba.id} full />
+                    </>
+                  ) : (
+                    <div className="bg-muted p-3 sm:p-4 rounded-lg text-center">
+                      <Lock className="h-5 w-5 sm:h-6 sm:w-6 mx-auto mb-2 text-muted-foreground" />
+                      <p className="text-muted-foreground text-sm">Inscrições fechadas</p>
+                    </div>
+                  )}
                 </div>
               )}
+
 
               {isAdmin && (
                 <div className="border-t pt-3 sm:pt-4 space-y-2 sm:space-y-3">
