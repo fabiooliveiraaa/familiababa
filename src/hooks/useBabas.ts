@@ -388,5 +388,5 @@ export function useBabaRegistrations(babaId: string) {
     return true;
   };
 
-  return { registrations, loading, register, registerMensalista, registerGuest, promoteFromWaitingList, updateStatus, removeRegistration, refetch: fetchRegistrations };
+  return { registrations, loading, register, registerMensalista, registerGuest, selfRegisterGuest, promoteFromWaitingList, updateStatus, removeRegistration, refetch: fetchRegistrations };
 }
