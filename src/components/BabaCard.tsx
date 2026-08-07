@@ -7,6 +7,7 @@ import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useNavigate } from 'react-router-dom';
 import { formatCountdown, isRegistrationLive, useNow } from '@/lib/registrationSchedule';
+import { NotifyBell } from '@/components/NotifyBell';
 
 interface BabaCardProps {
   baba: Baba;
