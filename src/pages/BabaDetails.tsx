@@ -49,7 +49,7 @@ export default function BabaDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { babas, loading: babasLoading, toggleBabaOpen, deleteBaba, refetch: refetchBabas } = useBabas();
-  const { registrations, loading: regsLoading, register, registerMensalista, registerGuest, promoteFromWaitingList, updateStatus, removeRegistration, refetch } = useBabaRegistrations(id || '');
+  const { registrations, loading: regsLoading, register, registerMensalista, registerGuest, selfRegisterGuest, promoteFromWaitingList, updateStatus, removeRegistration, refetch } = useBabaRegistrations(id || '');
   const { user, isAdmin } = useAuthContext();
   const [selectedPosition, setSelectedPosition] = useState<'linha' | 'goleiro'>('linha');
   const [uploading, setUploading] = useState(false);
