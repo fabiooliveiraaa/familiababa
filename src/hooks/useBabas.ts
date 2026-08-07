@@ -292,6 +292,54 @@ export function useBabaRegistrations(babaId: string) {
     return true;
   };
 
+  /** Self-registration for visitors without an account. */
+  const selfRegisterGuest = async (
+    name: string,
+    position: 'linha' | 'goleiro',
+    paymentProofUrl?: string,
+    isWaitingList = false,
+  ) => {
+    const trimmed = name.trim();
+    if (trimmed.length < 2) {
+      toast({ title: 'Digite seu nome completo', variant: 'destructive' });
+      return false;
+    }
+
+    let waitingPosition: number | null = null;
+    if (isWaitingList) {
+      const { data: waitingData } = await supabase
+        .from('registrations')
+        .select('waiting_position')
+        .eq('baba_id', babaId)
+        .eq('status', 'lista_espera')
+        .order('waiting_position', { ascending: false })
+        .limit(1);
+      waitingPosition = (waitingData?.[0]?.waiting_position || 0) + 1;
+    }
+
+    const { error } = await supabase.from('registrations').insert({
+      baba_id: babaId,
+      user_id: null,
+      position,
+      status: isWaitingList ? 'lista_espera' : 'inscrito',
+      manual_name: trimmed,
+      payment_proof_url: paymentProofUrl || null,
+      waiting_position: waitingPosition,
+    });
+
+    if (error) {
+      console.error('Error self registering guest:', error);
+      toast({ title: 'Erro ao se inscrever', description: error.message, variant: 'destructive' });
+      return false;
+    }
+
+    toast({
+      title: isWaitingList ? 'Você entrou na lista de espera!' : 'Inscrição enviada!',
+      description: 'Aguarde a confirmação do organizador.',
+    });
+    return true;
+  };
+
   const promoteFromWaitingList = async (userId: string) => {
     const { error } = await supabase
       .from('registrations')
