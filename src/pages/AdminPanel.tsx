@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Header } from '@/components/Header';
 import { InstagramSettings } from '@/components/InstagramSettings';
+import { FinancePanel } from '@/components/FinancePanel';
 import { useBabas } from '@/hooks/useBabas';
 import { useAuthContext } from '@/contexts/AuthContext';
 
@@ -267,8 +268,12 @@ export default function AdminPanel() {
           </CardContent>
         </Card>
 
+        {/* Financeiro */}
+        <FinancePanel />
+
         {/* Instagram Settings */}
         <InstagramSettings />
+
       </main>
     </div>
   );
