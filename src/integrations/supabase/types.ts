@@ -139,6 +139,137 @@ export type Database = {
         }
         Relationships: []
       }
+      finance_transactions: {
+        Row: {
+          amount: number
+          baba_id: string | null
+          category: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          occurred_on: string
+          type: string
+        }
+        Insert: {
+          amount: number
+          baba_id?: string | null
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          occurred_on?: string
+          type: string
+        }
+        Update: {
+          amount?: number
+          baba_id?: string | null
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          occurred_on?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "finance_transactions_baba_id_fkey"
+            columns: ["baba_id"]
+            isOneToOne: false
+            referencedRelation: "babas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      membership_payments: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          member_id: string
+          method: string | null
+          paid_on: string | null
+          reference_month: string
+          status: string
+          transaction_id: string | null
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          id?: string
+          member_id: string
+          method?: string | null
+          paid_on?: string | null
+          reference_month: string
+          status?: string
+          transaction_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          member_id?: string
+          method?: string | null
+          paid_on?: string | null
+          reference_month?: string
+          status?: string
+          transaction_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "membership_payments_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "monthly_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "membership_payments_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "finance_transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      monthly_members: {
+        Row: {
+          active: boolean
+          created_at: string
+          due_day: number
+          id: string
+          monthly_fee: number
+          name: string
+          notes: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          due_day?: number
+          id?: string
+          monthly_fee?: number
+          name: string
+          notes?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          due_day?: number
+          id?: string
+          monthly_fee?: number
+          name?: string
+          notes?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       player_achievements: {
         Row: {
           achieved_at: string
