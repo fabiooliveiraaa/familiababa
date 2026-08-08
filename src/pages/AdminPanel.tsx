@@ -268,8 +268,12 @@ export default function AdminPanel() {
           </CardContent>
         </Card>
 
+        {/* Financeiro */}
+        <FinancePanel />
+
         {/* Instagram Settings */}
         <InstagramSettings />
+
       </main>
     </div>
   );
