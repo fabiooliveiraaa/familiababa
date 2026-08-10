@@ -264,14 +264,26 @@ export function FinancePanel() {
           <TabsContent value="mensalistas" className="space-y-4 pt-4">
             <div className="grid grid-cols-2 gap-2">
               <div className="rounded-xl border p-3">
-                <p className="text-[11px] uppercase text-muted-foreground">Previsto</p>
+                <p className="text-[11px] uppercase text-muted-foreground">Previsto no mês</p>
                 <p className="text-base font-bold">{formatBRL(expectedMembership)}</p>
               </div>
               <div className="rounded-xl border p-3">
-                <p className="text-[11px] uppercase text-muted-foreground">Recebido</p>
+                <p className="text-[11px] uppercase text-muted-foreground">Recebido no mês</p>
                 <p className="text-base font-bold text-success">{formatBRL(receivedMembership)}</p>
               </div>
             </div>
+
+            <p className="rounded-lg border border-dashed p-3 text-xs text-muted-foreground">
+              Cadastrar um mensalista <strong>não</strong> entra no caixa. O valor é mensal: a cada mês
+              você marca como pago e só então ele entra no caixa, na categoria “mensalidade”.
+            </p>
+
+            {activeMembers.length > 0 && (
+              <Button variant="outline" className="w-full h-11" onClick={markAllPaid}>
+                Marcar todos como pagos em {monthKey}
+              </Button>
+            )}
+
 
             <form onSubmit={handleAddMember} className="space-y-3 rounded-xl border p-3">
               <Label>Escolher mensalista</Label>
