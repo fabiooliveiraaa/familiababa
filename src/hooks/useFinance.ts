@@ -210,7 +210,12 @@ export function useFinance(monthKey: string) {
   };
 
   const monthTransactions = transactions.filter(t => t.occurred_on.slice(0, 7) === monthKey);
-  const totalIn = monthTransactions.filter(t => t.type === 'entrada').reduce((s, t) => s + Number(t.amount), 0);
+  const entradas = monthTransactions.filter(t => t.type === 'entrada');
+  const totalIn = entradas.reduce((s, t) => s + Number(t.amount), 0);
+  const membershipIn = entradas
+    .filter(t => t.category === 'mensalidade')
+    .reduce((s, t) => s + Number(t.amount), 0);
+  const otherIn = totalIn - membershipIn;
   const totalOut = monthTransactions.filter(t => t.type === 'saida').reduce((s, t) => s + Number(t.amount), 0);
   const balanceAll = transactions.reduce(
     (s, t) => s + (t.type === 'entrada' ? Number(t.amount) : -Number(t.amount)),
@@ -224,6 +229,8 @@ export function useFinance(monthKey: string) {
     members,
     payments,
     totalIn,
+    membershipIn,
+    otherIn,
     totalOut,
     monthBalance: totalIn - totalOut,
     balanceAll,
