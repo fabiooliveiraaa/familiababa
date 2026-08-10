@@ -363,7 +363,8 @@ export function FinancePanel() {
                   step="0.01"
                   inputMode="decimal"
                   className="h-11"
-                  defaultValue={courtFee || ''}
+                  value={feeInput}
+                  onChange={e => setFeeInput(e.target.value)}
                   onBlur={e => updateSetting('finance_court_fee', e.target.value)}
                 />
               </div>
@@ -372,12 +373,14 @@ export function FinancePanel() {
                 <Input
                   type="number"
                   min={1}
-                  max={28}
+                  max={31}
                   className="h-11"
-                  defaultValue={courtDueDay}
+                  value={dueInput}
+                  onChange={e => setDueInput(e.target.value)}
                   onBlur={e => updateSetting('finance_court_due_day', e.target.value)}
                 />
               </div>
+
               <div className="space-y-1">
                 <Label>Dia da semana do baba</Label>
                 <div className="flex flex-wrap gap-2">
