@@ -27,14 +27,29 @@ import {
 
 const WEEKDAYS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 
+const num = (v: string | null | undefined, fallback: number) => {
+  const n = parseFloat(String(v ?? '').replace(',', '.'));
+  return Number.isFinite(n) ? n : fallback;
+};
+
 export function FinancePanel() {
   const [monthKey, setMonthKey] = useState(currentMonthKey());
   const finance = useFinance(monthKey);
-  const { getSetting, updateSetting } = useAppSettings();
+  const { getSetting, updateSetting, settings } = useAppSettings();
 
-  const courtFee = Number(getSetting('finance_court_fee') ?? 0);
-  const babaWeekday = Number(getSetting('finance_baba_weekday') ?? 3);
-  const courtDueDay = Number(getSetting('finance_court_due_day') ?? 5);
+  const courtFee = num(getSetting('finance_court_fee'), 0);
+  const babaWeekday = Math.trunc(num(getSetting('finance_baba_weekday'), 3));
+  const courtDueDay = Math.trunc(num(getSetting('finance_court_due_day'), 5));
+
+  // inputs controlados sincronizados com as configurações salvas
+  const [feeInput, setFeeInput] = useState('');
+  const [dueInput, setDueInput] = useState('');
+  useEffect(() => {
+    setFeeInput(courtFee ? String(courtFee) : '');
+    setDueInput(String(courtDueDay));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [settings]);
+
 
   const [tx, setTx] = useState({
     type: 'entrada' as 'entrada' | 'saida',
