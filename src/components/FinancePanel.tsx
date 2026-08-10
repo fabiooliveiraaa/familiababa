@@ -122,6 +122,9 @@ export function FinancePanel() {
           <div className="rounded-xl border bg-success/10 p-3">
             <p className="text-[11px] uppercase text-muted-foreground">Entradas</p>
             <p className="text-lg font-bold text-success">{formatBRL(finance.totalIn)}</p>
+            <p className="text-[11px] text-muted-foreground">
+              Mensalidades {formatBRL(finance.membershipIn)} • Outras {formatBRL(finance.otherIn)}
+            </p>
           </div>
           <div className="rounded-xl border bg-destructive/10 p-3">
             <p className="text-[11px] uppercase text-muted-foreground">Saídas</p>
@@ -136,6 +139,7 @@ export function FinancePanel() {
             <p className="text-lg font-bold">{formatBRL(finance.balanceAll)}</p>
           </div>
         </div>
+
 
         <Tabs defaultValue="caixa">
           <TabsList className="grid w-full grid-cols-3 h-11">
