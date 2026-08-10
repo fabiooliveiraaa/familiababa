@@ -103,6 +103,15 @@ export function FinancePanel() {
     if (ok) setNewMember({ name: '', userId: null, fee: '', dueDay: '5' });
   };
 
+  const markAllPaid = async () => {
+    for (const m of activeMembers) {
+      if (paymentFor(m.id)?.status !== 'pago') {
+        // eslint-disable-next-line no-await-in-loop
+        await finance.setPaymentStatus(m, 'pago', 'pix');
+      }
+    }
+  };
+
   return (
     <Card className="mt-6 border-2">
       <CardHeader className="bg-secondary">
