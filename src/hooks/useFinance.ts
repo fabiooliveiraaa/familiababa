@@ -49,19 +49,26 @@ export function formatBRL(value: number) {
  * Conta quantas ocorrências de um dia da semana existem no ciclo de cobrança,
  * que vai do dia de vencimento da quadra até o mesmo dia do mês seguinte.
  */
+const daysInMonth = (y: number, m: number) => new Date(y, m + 1, 0).getDate();
+
 export function countBabasInCycle(monthKey: string, weekday: number, dueDay: number) {
-  const [y, m] = monthKey.split('-').map(Number);
-  const start = new Date(y, m - 1, dueDay);
-  const end = new Date(y, m, dueDay);
-  let count = 0;
+  const [y, m] = (monthKey || currentMonthKey()).split('-').map(Number);
+  if (!y || !m) return { count: 0, dates: [] as Date[], start: new Date(), end: new Date() };
+
+  const wd = Number.isFinite(weekday) ? ((Math.trunc(weekday) % 7) + 7) % 7 : 3;
+  const day = Math.min(Math.max(Math.trunc(dueDay) || 1, 1), 31);
+
+  // clamp o dia de vencimento ao número de dias de cada mês do ciclo
+  const start = new Date(y, m - 1, Math.min(day, daysInMonth(y, m - 1)));
+  const end = new Date(y, m, Math.min(day, daysInMonth(y, m)));
+
   const dates: Date[] = [];
-  for (const d = new Date(start); d < end; d.setDate(d.getDate() + 1)) {
-    if (d.getDay() === weekday) {
-      count++;
-      dates.push(new Date(d));
-    }
+  const d = new Date(start);
+  while (d < end) {
+    if (d.getDay() === wd) dates.push(new Date(d));
+    d.setDate(d.getDate() + 1);
   }
-  return { count, dates, start, end };
+  return { count: dates.length, dates, start, end };
 }
 
 export function useFinance(monthKey: string) {
@@ -203,7 +210,12 @@ export function useFinance(monthKey: string) {
   };
 
   const monthTransactions = transactions.filter(t => t.occurred_on.slice(0, 7) === monthKey);
-  const totalIn = monthTransactions.filter(t => t.type === 'entrada').reduce((s, t) => s + Number(t.amount), 0);
+  const entradas = monthTransactions.filter(t => t.type === 'entrada');
+  const totalIn = entradas.reduce((s, t) => s + Number(t.amount), 0);
+  const membershipIn = entradas
+    .filter(t => t.category === 'mensalidade')
+    .reduce((s, t) => s + Number(t.amount), 0);
+  const otherIn = totalIn - membershipIn;
   const totalOut = monthTransactions.filter(t => t.type === 'saida').reduce((s, t) => s + Number(t.amount), 0);
   const balanceAll = transactions.reduce(
     (s, t) => s + (t.type === 'entrada' ? Number(t.amount) : -Number(t.amount)),
@@ -217,6 +229,8 @@ export function useFinance(monthKey: string) {
     members,
     payments,
     totalIn,
+    membershipIn,
+    otherIn,
     totalOut,
     monthBalance: totalIn - totalOut,
     balanceAll,

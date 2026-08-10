@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   ArrowDownCircle,
   ArrowUpCircle,
@@ -27,14 +27,29 @@ import {
 
 const WEEKDAYS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 
+const num = (v: string | null | undefined, fallback: number) => {
+  const n = parseFloat(String(v ?? '').replace(',', '.'));
+  return Number.isFinite(n) ? n : fallback;
+};
+
 export function FinancePanel() {
   const [monthKey, setMonthKey] = useState(currentMonthKey());
   const finance = useFinance(monthKey);
-  const { getSetting, updateSetting } = useAppSettings();
+  const { getSetting, updateSetting, settings } = useAppSettings();
 
-  const courtFee = Number(getSetting('finance_court_fee') ?? 0);
-  const babaWeekday = Number(getSetting('finance_baba_weekday') ?? 3);
-  const courtDueDay = Number(getSetting('finance_court_due_day') ?? 5);
+  const courtFee = num(getSetting('finance_court_fee'), 0);
+  const babaWeekday = Math.trunc(num(getSetting('finance_baba_weekday'), 3));
+  const courtDueDay = Math.trunc(num(getSetting('finance_court_due_day'), 5));
+
+  // inputs controlados sincronizados com as configurações salvas
+  const [feeInput, setFeeInput] = useState('');
+  const [dueInput, setDueInput] = useState('');
+  useEffect(() => {
+    setFeeInput(courtFee ? String(courtFee) : '');
+    setDueInput(String(courtDueDay));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [settings]);
+
 
   const [tx, setTx] = useState({
     type: 'entrada' as 'entrada' | 'saida',
@@ -88,6 +103,15 @@ export function FinancePanel() {
     if (ok) setNewMember({ name: '', userId: null, fee: '', dueDay: '5' });
   };
 
+  const markAllPaid = async () => {
+    for (const m of activeMembers) {
+      if (paymentFor(m.id)?.status !== 'pago') {
+        // eslint-disable-next-line no-await-in-loop
+        await finance.setPaymentStatus(m, 'pago', 'pix');
+      }
+    }
+  };
+
   return (
     <Card className="mt-6 border-2">
       <CardHeader className="bg-secondary">
@@ -107,6 +131,9 @@ export function FinancePanel() {
           <div className="rounded-xl border bg-success/10 p-3">
             <p className="text-[11px] uppercase text-muted-foreground">Entradas</p>
             <p className="text-lg font-bold text-success">{formatBRL(finance.totalIn)}</p>
+            <p className="text-[11px] text-muted-foreground">
+              Mensalidades {formatBRL(finance.membershipIn)} • Outras {formatBRL(finance.otherIn)}
+            </p>
           </div>
           <div className="rounded-xl border bg-destructive/10 p-3">
             <p className="text-[11px] uppercase text-muted-foreground">Saídas</p>
@@ -121,6 +148,7 @@ export function FinancePanel() {
             <p className="text-lg font-bold">{formatBRL(finance.balanceAll)}</p>
           </div>
         </div>
+
 
         <Tabs defaultValue="caixa">
           <TabsList className="grid w-full grid-cols-3 h-11">
@@ -236,14 +264,26 @@ export function FinancePanel() {
           <TabsContent value="mensalistas" className="space-y-4 pt-4">
             <div className="grid grid-cols-2 gap-2">
               <div className="rounded-xl border p-3">
-                <p className="text-[11px] uppercase text-muted-foreground">Previsto</p>
+                <p className="text-[11px] uppercase text-muted-foreground">Previsto no mês</p>
                 <p className="text-base font-bold">{formatBRL(expectedMembership)}</p>
               </div>
               <div className="rounded-xl border p-3">
-                <p className="text-[11px] uppercase text-muted-foreground">Recebido</p>
+                <p className="text-[11px] uppercase text-muted-foreground">Recebido no mês</p>
                 <p className="text-base font-bold text-success">{formatBRL(receivedMembership)}</p>
               </div>
             </div>
+
+            <p className="rounded-lg border border-dashed p-3 text-xs text-muted-foreground">
+              Cadastrar um mensalista <strong>não</strong> entra no caixa. O valor é mensal: a cada mês
+              você marca como pago e só então ele entra no caixa, na categoria “mensalidade”.
+            </p>
+
+            {activeMembers.length > 0 && (
+              <Button variant="outline" className="w-full h-11" onClick={markAllPaid}>
+                Marcar todos como pagos em {monthKey}
+              </Button>
+            )}
+
 
             <form onSubmit={handleAddMember} className="space-y-3 rounded-xl border p-3">
               <Label>Escolher mensalista</Label>
@@ -344,7 +384,8 @@ export function FinancePanel() {
                   step="0.01"
                   inputMode="decimal"
                   className="h-11"
-                  defaultValue={courtFee || ''}
+                  value={feeInput}
+                  onChange={e => setFeeInput(e.target.value)}
                   onBlur={e => updateSetting('finance_court_fee', e.target.value)}
                 />
               </div>
@@ -353,12 +394,14 @@ export function FinancePanel() {
                 <Input
                   type="number"
                   min={1}
-                  max={28}
+                  max={31}
                   className="h-11"
-                  defaultValue={courtDueDay}
+                  value={dueInput}
+                  onChange={e => setDueInput(e.target.value)}
                   onBlur={e => updateSetting('finance_court_due_day', e.target.value)}
                 />
               </div>
+
               <div className="space-y-1">
                 <Label>Dia da semana do baba</Label>
                 <div className="flex flex-wrap gap-2">
