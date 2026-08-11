@@ -358,10 +358,6 @@ export default function AdminPanel() {
             </p>
           </TabsContent>
 
-          {/* SOCIAL */}
-          <TabsContent value="instagram" className="pt-0">
-            <InstagramSettings />
-          </TabsContent>
         </Tabs>
       </main>
     </div>
