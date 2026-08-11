@@ -10,7 +10,6 @@ import {
   Users,
   Loader2,
   Wallet,
-  Instagram,
   Trophy,
   Crown,
   Shield,
@@ -22,11 +21,11 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Header } from '@/components/Header';
-import { InstagramSettings } from '@/components/InstagramSettings';
 import { FinancePanel } from '@/components/FinancePanel';
 import { useBabas } from '@/hooks/useBabas';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { isRegistrationLive, useNow } from '@/lib/registrationSchedule';
+
 
 export default function AdminPanel() {
   const navigate = useNavigate();
