@@ -115,7 +115,7 @@ export default function AdminPanel() {
         </div>
 
         <Tabs defaultValue="babas">
-          <TabsList className="grid w-full grid-cols-4 h-12">
+          <TabsList className="grid w-full grid-cols-3 h-12">
             <TabsTrigger value="babas" className="flex-col gap-0.5 text-[11px]">
               <Plus className="h-4 w-4" />
               Criar
@@ -128,11 +128,8 @@ export default function AdminPanel() {
               <Wallet className="h-4 w-4" />
               Financeiro
             </TabsTrigger>
-            <TabsTrigger value="instagram" className="flex-col gap-0.5 text-[11px]">
-              <Instagram className="h-4 w-4" />
-              Social
-            </TabsTrigger>
           </TabsList>
+
 
           {/* CRIAR BABA */}
           <TabsContent value="babas" className="pt-4">
