@@ -2,11 +2,11 @@ import { useEffect, useState } from 'react';
 import { Header } from '@/components/Header';
 import { BabaCard } from '@/components/BabaCard';
 
-import { InstagramEmbed } from '@/components/InstagramEmbed';
 import { PublicFinanceSummary } from '@/components/PublicFinanceSummary';
 import { Calendar, Loader2, ChevronDown, FolderClosed } from 'lucide-react';
 import { useBabas } from '@/hooks/useBabas';
 import { useAuthContext } from '@/contexts/AuthContext';
+
 import {
   Collapsible,
   CollapsibleContent,
