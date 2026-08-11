@@ -136,7 +136,7 @@ export function useBabas() {
     return true;
   };
 
-  return { babas, loading, createBaba, toggleBabaOpen, deleteBaba, refetch: fetchBabas };
+  return { babas, loading, createBaba, updateBaba, toggleBabaOpen, deleteBaba, refetch: fetchBabas };
 }
 
 export function useBabaRegistrations(babaId: string) {
