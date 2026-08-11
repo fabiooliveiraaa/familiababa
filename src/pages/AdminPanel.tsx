@@ -371,6 +371,14 @@ export default function AdminPanel() {
           </TabsContent>
 
         </Tabs>
+
+        <EditBabaDialog
+          baba={editing}
+          open={!!editing}
+          onOpenChange={(o) => !o && setEditing(null)}
+          onSave={updateBaba}
+          onDelete={deleteBaba}
+        />
       </main>
     </div>
   );
