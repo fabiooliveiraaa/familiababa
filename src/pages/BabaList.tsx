@@ -174,18 +174,16 @@ export default function BabaList() {
             )}
           </div>
 
-          {/* Desktop Sidebar with Instagram */}
+          {/* Desktop Sidebar */}
           <aside className="hidden lg:block lg:w-80 shrink-0">
             <div className="sticky top-20 space-y-6">
-              <InstagramEmbed />
               <PublicFinanceSummary />
             </div>
           </aside>
         </div>
 
-        {/* Instagram - shown below main content on mobile */}
+        {/* Mobile summary */}
         <div className="lg:hidden mt-8 space-y-6">
-          <InstagramEmbed />
           <PublicFinanceSummary />
         </div>
       </main>
