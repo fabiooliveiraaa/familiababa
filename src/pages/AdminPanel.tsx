@@ -23,7 +23,8 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Header } from '@/components/Header';
 import { FinancePanel } from '@/components/FinancePanel';
-import { useBabas } from '@/hooks/useBabas';
+import { useBabas, type Baba } from '@/hooks/useBabas';
+import { EditBabaDialog } from '@/components/EditBabaDialog';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { isRegistrationLive, useNow } from '@/lib/registrationSchedule';
 
@@ -31,8 +32,9 @@ import { isRegistrationLive, useNow } from '@/lib/registrationSchedule';
 export default function AdminPanel() {
   const navigate = useNavigate();
   const { user, isAdmin, loading: authLoading } = useAuthContext();
-  const { babas, createBaba } = useBabas();
+  const { babas, createBaba, updateBaba, deleteBaba } = useBabas();
   const [submitting, setSubmitting] = useState(false);
+  const [editing, setEditing] = useState<Baba | null>(null);
   const now = useNow();
 
   const [formData, setFormData] = useState({
