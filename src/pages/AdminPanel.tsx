@@ -10,7 +10,6 @@ import {
   Users,
   Loader2,
   Wallet,
-  Instagram,
   Trophy,
   Crown,
   Shield,
@@ -22,11 +21,11 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Header } from '@/components/Header';
-import { InstagramSettings } from '@/components/InstagramSettings';
 import { FinancePanel } from '@/components/FinancePanel';
 import { useBabas } from '@/hooks/useBabas';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { isRegistrationLive, useNow } from '@/lib/registrationSchedule';
+
 
 export default function AdminPanel() {
   const navigate = useNavigate();
@@ -116,7 +115,7 @@ export default function AdminPanel() {
         </div>
 
         <Tabs defaultValue="babas">
-          <TabsList className="grid w-full grid-cols-4 h-12">
+          <TabsList className="grid w-full grid-cols-3 h-12">
             <TabsTrigger value="babas" className="flex-col gap-0.5 text-[11px]">
               <Plus className="h-4 w-4" />
               Criar
@@ -129,11 +128,8 @@ export default function AdminPanel() {
               <Wallet className="h-4 w-4" />
               Financeiro
             </TabsTrigger>
-            <TabsTrigger value="instagram" className="flex-col gap-0.5 text-[11px]">
-              <Instagram className="h-4 w-4" />
-              Social
-            </TabsTrigger>
           </TabsList>
+
 
           {/* CRIAR BABA */}
           <TabsContent value="babas" className="pt-4">
@@ -362,10 +358,6 @@ export default function AdminPanel() {
             </p>
           </TabsContent>
 
-          {/* SOCIAL */}
-          <TabsContent value="instagram" className="pt-0">
-            <InstagramSettings />
-          </TabsContent>
         </Tabs>
       </main>
     </div>
