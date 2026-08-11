@@ -13,6 +13,7 @@ import {
   Trophy,
   Crown,
   Shield,
+  Pencil,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -22,7 +23,8 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Header } from '@/components/Header';
 import { FinancePanel } from '@/components/FinancePanel';
-import { useBabas } from '@/hooks/useBabas';
+import { useBabas, type Baba } from '@/hooks/useBabas';
+import { EditBabaDialog } from '@/components/EditBabaDialog';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { isRegistrationLive, useNow } from '@/lib/registrationSchedule';
 
@@ -30,8 +32,9 @@ import { isRegistrationLive, useNow } from '@/lib/registrationSchedule';
 export default function AdminPanel() {
   const navigate = useNavigate();
   const { user, isAdmin, loading: authLoading } = useAuthContext();
-  const { babas, createBaba } = useBabas();
+  const { babas, createBaba, updateBaba, deleteBaba } = useBabas();
   const [submitting, setSubmitting] = useState(false);
+  const [editing, setEditing] = useState<Baba | null>(null);
   const now = useNow();
 
   const [formData, setFormData] = useState({
@@ -324,26 +327,35 @@ export default function AdminPanel() {
                 {babas.map((b) => {
                   const live = isRegistrationLive(b, now);
                   return (
-                    <button
-                      key={b.id}
-                      onClick={() => navigate(`/baba/${b.id}`)}
-                      className="flex w-full items-center gap-3 rounded-lg border p-3 text-left transition-colors hover:bg-muted/50"
-                    >
-                      <div className="min-w-0 flex-1">
+                    <div key={b.id} className="flex items-center gap-2 rounded-lg border p-3">
+                      <button
+                        onClick={() => navigate(`/baba/${b.id}`)}
+                        className="min-w-0 flex-1 text-left"
+                      >
                         <p className="truncate text-sm font-semibold">{b.title}</p>
                         <p className="text-xs text-muted-foreground">
                           {new Date(b.date + 'T12:00:00').toLocaleDateString('pt-BR')} • {b.start_time}
                         </p>
-                      </div>
+                      </button>
                       <Badge variant={live ? 'default' : 'outline'} className={live ? 'bg-success' : ''}>
                         {live ? 'Aberto' : b.is_open ? 'Em breve' : 'Fechado'}
                       </Badge>
-                    </button>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        aria-label={`Editar ${b.title}`}
+                        onClick={() => setEditing(b)}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                    </div>
                   );
                 })}
                 <p className="pt-2 text-xs text-muted-foreground">
-                  Abra um baba para editar times, sorteio, premiações e ferramentas de IA.
+                  Toque no lápis para editar data, horário, local, valor, vagas e abertura das
+                  inscrições. Abra o baba para times, sorteio e premiações.
                 </p>
+
               </CardContent>
             </Card>
           </TabsContent>
@@ -359,6 +371,14 @@ export default function AdminPanel() {
           </TabsContent>
 
         </Tabs>
+
+        <EditBabaDialog
+          baba={editing}
+          open={!!editing}
+          onOpenChange={(o) => !o && setEditing(null)}
+          onSave={updateBaba}
+          onDelete={deleteBaba}
+        />
       </main>
     </div>
   );

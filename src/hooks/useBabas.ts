@@ -91,6 +91,23 @@ export function useBabas() {
     return data;
   };
 
+  const updateBaba = async (babaId: string, updates: Partial<Baba>) => {
+    const { error } = await supabase
+      .from('babas')
+      .update(updates as any)
+      .eq('id', babaId);
+
+    if (error) {
+      console.error('Error updating baba:', error);
+      toast({ title: 'Erro ao salvar alterações', description: error.message, variant: 'destructive' });
+      return false;
+    }
+
+    toast({ title: 'Baba atualizado!' });
+    await fetchBabas();
+    return true;
+  };
+
   const toggleBabaOpen = async (babaId: string, isOpen: boolean) => {
     const { error } = await supabase
       .from('babas')
@@ -119,7 +136,7 @@ export function useBabas() {
     return true;
   };
 
-  return { babas, loading, createBaba, toggleBabaOpen, deleteBaba, refetch: fetchBabas };
+  return { babas, loading, createBaba, updateBaba, toggleBabaOpen, deleteBaba, refetch: fetchBabas };
 }
 
 export function useBabaRegistrations(babaId: string) {
