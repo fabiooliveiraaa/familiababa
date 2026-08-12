@@ -129,8 +129,8 @@ export default function BabaDetails() {
     }
   };
 
-  const handlePromoteFromWaitingList = async (userId: string) => {
-    await promoteFromWaitingList(userId);
+  const handlePromoteFromWaitingList = async (registrationId: string) => {
+    await promoteFromWaitingList(registrationId);
   };
 
   const handleCopyPix = async () => {
@@ -230,8 +230,8 @@ export default function BabaDetails() {
 
 
 
-  const handleStatusChange = (userId: string, newStatus: 'inscrito' | 'pago' | 'confirmado' | 'lista_espera') => {
-    updateStatus(userId, newStatus);
+  const handleStatusChange = (registrationId: string, newStatus: 'inscrito' | 'pago' | 'confirmado' | 'lista_espera') => {
+    updateStatus(registrationId, newStatus);
   };
 
   const handleRemovePlayer = async (registrationId: string) => {

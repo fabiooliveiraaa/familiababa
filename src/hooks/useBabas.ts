@@ -357,12 +357,11 @@ export function useBabaRegistrations(babaId: string) {
     return true;
   };
 
-  const promoteFromWaitingList = async (userId: string) => {
+  const promoteFromWaitingList = async (registrationId: string) => {
     const { error } = await supabase
       .from('registrations')
       .update({ status: 'confirmado', waiting_position: null })
-      .eq('baba_id', babaId)
-      .eq('user_id', userId);
+      .eq('id', registrationId);
     
     if (error) {
       console.error('Error promoting from waiting list:', error);
@@ -374,17 +373,18 @@ export function useBabaRegistrations(babaId: string) {
     return true;
   };
 
-  const updateStatus = async (userId: string, status: 'inscrito' | 'pago' | 'confirmado' | 'lista_espera') => {
+  const updateStatus = async (registrationId: string, status: 'inscrito' | 'pago' | 'confirmado' | 'lista_espera') => {
     const { error } = await supabase
       .from('registrations')
       .update({ status })
-      .eq('baba_id', babaId)
-      .eq('user_id', userId);
-    
+      .eq('id', registrationId);
+
     if (error) {
       console.error('Error updating status:', error);
       toast({ title: 'Erro ao atualizar status', variant: 'destructive' });
+      return;
     }
+    await fetchRegistrations();
   };
 
   const removeRegistration = async (registrationId: string) => {
