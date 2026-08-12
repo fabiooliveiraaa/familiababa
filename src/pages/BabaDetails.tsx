@@ -322,8 +322,8 @@ export default function BabaDetails() {
                   </h4>
                   <div className="bg-muted p-2 sm:p-3 rounded-lg">
                     <p className="text-xs sm:text-sm text-muted-foreground mb-2">Chave PIX:</p>
-                    <div className="flex items-center gap-2">
-                      <code className="flex-1 text-xs sm:text-sm bg-background p-2 rounded truncate">{baba.pix_key}</code>
+                    <div className="flex items-center gap-2 min-w-0">
+                      <code className="flex-1 min-w-0 text-xs sm:text-sm bg-background p-2 rounded truncate">{baba.pix_key}</code>
                       <Button size="sm" variant="outline" onClick={handleCopyPix} className="h-8 px-2 sm:px-3 shrink-0">
                         {copied ? <CheckCircle className="h-4 w-4 text-success" /> : <Copy className="h-4 w-4" />}
                       </Button>
