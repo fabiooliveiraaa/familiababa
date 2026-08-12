@@ -282,7 +282,7 @@ export default function BabaDetails() {
           <span className="text-sm">Voltar</span>
         </Button>
 
-        <div className="grid gap-4 sm:gap-6 lg:grid-cols-3">
+        <div className="grid gap-4 sm:gap-6 lg:grid-cols-3 [&>*]:min-w-0">
           {/* Info Card */}
           <Card className="lg:col-span-1 border-2">
             <CardHeader className="bg-secondary p-3 sm:p-6">
@@ -322,8 +322,8 @@ export default function BabaDetails() {
                   </h4>
                   <div className="bg-muted p-2 sm:p-3 rounded-lg">
                     <p className="text-xs sm:text-sm text-muted-foreground mb-2">Chave PIX:</p>
-                    <div className="flex items-center gap-2">
-                      <code className="flex-1 text-xs sm:text-sm bg-background p-2 rounded truncate">{baba.pix_key}</code>
+                    <div className="flex items-center gap-2 min-w-0">
+                      <code className="flex-1 min-w-0 text-xs sm:text-sm bg-background p-2 rounded truncate">{baba.pix_key}</code>
                       <Button size="sm" variant="outline" onClick={handleCopyPix} className="h-8 px-2 sm:px-3 shrink-0">
                         {copied ? <CheckCircle className="h-4 w-4 text-success" /> : <Copy className="h-4 w-4" />}
                       </Button>
