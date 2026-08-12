@@ -282,7 +282,7 @@ export default function BabaDetails() {
           <span className="text-sm">Voltar</span>
         </Button>
 
-        <div className="grid gap-4 sm:gap-6 lg:grid-cols-3">
+        <div className="grid gap-4 sm:gap-6 lg:grid-cols-3 [&>*]:min-w-0">
           {/* Info Card */}
           <Card className="lg:col-span-1 border-2">
             <CardHeader className="bg-secondary p-3 sm:p-6">
