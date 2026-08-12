@@ -27,9 +27,9 @@ import {
 interface PlayerListProps {
   registrations: Registration[];
   isAdmin?: boolean;
-  onStatusChange?: (userId: string, currentStatus: 'inscrito' | 'pago' | 'confirmado' | 'lista_espera') => void;
-  onRemovePlayer?: (userId: string) => void;
-  onPromoteFromWaitingList?: (userId: string) => void;
+  onStatusChange?: (registrationId: string, currentStatus: 'inscrito' | 'pago' | 'confirmado' | 'lista_espera') => void;
+  onRemovePlayer?: (registrationId: string) => void;
+  onPromoteFromWaitingList?: (registrationId: string) => void;
 }
 
 const statusConfig = {
@@ -49,14 +49,14 @@ export function PlayerList({ registrations, isAdmin, onStatusChange, onRemovePla
     .filter((r) => r.status === 'lista_espera')
     .sort((a, b) => (a.waiting_position || 0) - (b.waiting_position || 0));
 
-  const handleStatusChange = (userId: string, currentStatus: 'inscrito' | 'pago' | 'confirmado' | 'lista_espera') => {
+  const handleStatusChange = (registrationId: string, currentStatus: 'inscrito' | 'pago' | 'confirmado' | 'lista_espera') => {
     const nextStatus: Record<string, 'inscrito' | 'pago' | 'confirmado'> = {
       inscrito: 'pago',
       pago: 'confirmado',
       confirmado: 'inscrito',
     };
     if (currentStatus !== 'lista_espera') {
-      onStatusChange?.(userId, nextStatus[currentStatus]);
+      onStatusChange?.(registrationId, nextStatus[currentStatus]);
     }
   };
 
@@ -154,9 +154,9 @@ export function PlayerList({ registrations, isAdmin, onStatusChange, onRemovePla
                         Abrir em nova aba
                       </a>
                     </Button>
-                    {reg.user_id && (
+                    {(
                       <Button
-                        onClick={() => handleStatusChange(reg.user_id!, 'confirmado')}
+                        onClick={() => handleStatusChange(reg.id, 'confirmado')}
                         className="bg-success hover:bg-success/90 w-full sm:w-auto"
                         size="sm"
                       >
@@ -169,22 +169,22 @@ export function PlayerList({ registrations, isAdmin, onStatusChange, onRemovePla
               </DialogContent>
             </Dialog>
           )}
-          {isAdmin && isWaitingList && reg.user_id && (
+          {isAdmin && isWaitingList && (
             <Button
               size="sm"
               variant="default"
-              onClick={() => onPromoteFromWaitingList?.(reg.user_id!)}
+              onClick={() => onPromoteFromWaitingList?.(reg.id)}
               className="h-7 sm:h-8 px-2 sm:px-3"
             >
               <ArrowUp className="h-3 w-3 sm:mr-1" />
               <span className="hidden sm:inline">Subir</span>
             </Button>
           )}
-          {isAdmin && !isWaitingList && !isManualEntry && reg.user_id && (
+          {isAdmin && !isWaitingList && (
             <Button
               size="sm"
               variant="outline"
-              onClick={() => handleStatusChange(reg.user_id!, reg.status)}
+              onClick={() => handleStatusChange(reg.id, reg.status)}
               className="h-7 sm:h-8 px-2 sm:px-3"
             >
               <span className="hidden sm:inline">Alterar</span>
